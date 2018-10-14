@@ -64,7 +64,7 @@ C = [1 0 0 0; 0 1 0 0];
 
 %% Sterowanie
 
-ster = rank(ctrb(A,B))
+sterowanie = rank(ctrb(A,B))
 
 Q = [100 0 0 0;
      0 100 0 0;

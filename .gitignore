@@ -17,13 +17,19 @@ helpsearch*/
 # Simulink code generation folders
 slprj/
 sccprj/
+Struktury i Algorytmy Sterowania\Lab1- Rekursywny filtr kalmana/slprj/
 
 # Matlab code generation folders
 codegen/
 
 # Simulink autosave extension
 *.autosave
-*.slx.autosave
+*slx.autosave
+
 
 # Octave session info
 octave-workspace
+
+# ro¿sze¿enia w slprj
+*.tmw
+*.l

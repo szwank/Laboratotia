@@ -200,16 +200,20 @@ Bd = [0 0;                % inicjalizacja Bd
 Cd = [1 0 0 0;                 % inicjalizacja Cd
       0 1 0 0];
 
-Z = [10 0;                 % inicjalizacja Z
-     0 10];
+Z = [1 0;                 % inicjalizacja Z
+     0 1];
                    
-V = [10 0;                     % inicjalizacja V
-     0 10];                   
+V = [1 0;                     % inicjalizacja V
+     0 1];                   
                    
 G = [0 0;                % inicjalizacja G
       0 0;
       0.001 0;
-      0 0.001]; 
+      0 0.001];
+  
+H = [-0.2; -0.2];             % korekta U
+
+F = [-0.2; -0.2];             % korekta y
  
 xHat = block.Dwork(1).Data;    % podstawienie za xHat
 
@@ -219,7 +223,7 @@ P = [block.Dwork(2).Data';      % z³o¿enie macierzy P
      block.Dwork(5).Data'];
 
 % xHat_kk1:
-xHat_kk1 = Ad * xHat + Bd * block.InputPort(1).Data; %(Ad * x + Bd * u)
+xHat_kk1 = Ad * xHat + Bd * (block.InputPort(1).Data + H); %(Ad * x + Bd * u)
 
 % P_kk1:
 P_kk1 = Ad * P * Ad' + G * Z * G';   %(P_kk1 = Ad * P * Ad' + G * Z * G')
@@ -236,7 +240,7 @@ block.Dwork(4).Data = P(3,:);
 block.Dwork(5).Data = P(4,:);
                   
 % xHat:                  
-block.OutputPort(1).Data = xHat_kk1 + K * (block.InputPort(2).Data - ...
+block.OutputPort(1).Data = xHat_kk1 + K * (block.InputPort(2).Data + F - ...
                            Cd * xHat_kk1); % xHat_kk1 + K * [y - Cd * xHat_kk1]
 %end Outputs
 

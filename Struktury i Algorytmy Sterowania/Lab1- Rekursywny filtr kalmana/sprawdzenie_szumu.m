@@ -1,13 +1,10 @@
-signal = zeros(100000000,1);
 
-
-    
-   noiseSignal =  awgn(signal, 10 * log10(0.1));
+noiseSignal =  wgn(100000000,1, 10 * log10(0.1));
 Z = 0;
 suma = 0;
-for i = 1:length(signal) - 1
+for i = 1:length(noiseSignal) - 1
     
-    Z = noiseSignal(i) * noiseSignal(i)' + Z;
+    Z = (noiseSignal(i)-0.2) * (noiseSignal(i)-0.2)' + Z;
     
     
 end

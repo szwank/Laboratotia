@@ -1,0 +1,1 @@
+load('dane1_wah_grupa4.mat')

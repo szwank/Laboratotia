@@ -1,0 +1,33 @@
+[System]
+Name='redulator_położenia'
+Type='mamdani'
+Version=2.0
+NumInputs=1
+NumOutputs=1
+NumRules=3
+AndMethod='min'
+OrMethod='max'
+ImpMethod='min'
+AggMethod='max'
+DefuzzMethod='centroid'
+
+[Input1]
+Name='odchylenie'
+Range=[0 50]
+NumMFs=3
+MF1='małe':'trimf',[-20 0 20]
+MF2='srednie':'trimf',[5 25 45]
+MF3='duze':'trimf',[30 50 70]
+
+[Output1]
+Name='predkasc'
+Range=[0 2]
+NumMFs=3
+MF1='mala':'trimf',[-0.8 0 0.8]
+MF2='srednia':'trimf',[0.2 1 1.8]
+MF3='duza':'trimf',[1.2 2 2.8]
+
+[Rules]
+1, 1 (1) : 1
+2, 2 (1) : 1
+3, 3 (1) : 1

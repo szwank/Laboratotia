@@ -1,0 +1,30 @@
+﻿  Źródło1.cpp
+e:\laboratoria\metody optymalizacij\algorytm_genetyczny- pankiewicz łukasz\algorytm_genetyczny- pankiewicz łukasz\źródło1.cpp(64): warning C4244: "+=": konwersja z "double" do "float", możliwa utrata danych
+e:\laboratoria\metody optymalizacij\algorytm_genetyczny- pankiewicz łukasz\algorytm_genetyczny- pankiewicz łukasz\źródło1.cpp(113): error C2065: "pCorss": niezadeklarowany identyfikator
+e:\laboratoria\metody optymalizacij\algorytm_genetyczny- pankiewicz łukasz\algorytm_genetyczny- pankiewicz łukasz\źródło1.cpp(157): error C2108: indeks dolny nie jest typem całkowitym
+e:\laboratoria\metody optymalizacij\algorytm_genetyczny- pankiewicz łukasz\algorytm_genetyczny- pankiewicz łukasz\źródło1.cpp(157): error C2228: po lewej ".fitness" musi być typ struct/union
+e:\laboratoria\metody optymalizacij\algorytm_genetyczny- pankiewicz łukasz\algorytm_genetyczny- pankiewicz łukasz\źródło1.cpp(157): error C2039: "fitnes": nie jest elementem członkowskim "Individual"
+  e:\laboratoria\metody optymalizacij\algorytm_genetyczny- pankiewicz łukasz\algorytm_genetyczny- pankiewicz łukasz\źródło1.cpp(10): note: zobacz deklarację „Individual”
+e:\laboratoria\metody optymalizacij\algorytm_genetyczny- pankiewicz łukasz\algorytm_genetyczny- pankiewicz łukasz\źródło1.cpp(158): error C2108: indeks dolny nie jest typem całkowitym
+e:\laboratoria\metody optymalizacij\algorytm_genetyczny- pankiewicz łukasz\algorytm_genetyczny- pankiewicz łukasz\źródło1.cpp(159): error C2108: indeks dolny nie jest typem całkowitym
+e:\laboratoria\metody optymalizacij\algorytm_genetyczny- pankiewicz łukasz\algorytm_genetyczny- pankiewicz łukasz\źródło1.cpp(159): error C2228: po lewej ".fitness" musi być typ struct/union
+e:\laboratoria\metody optymalizacij\algorytm_genetyczny- pankiewicz łukasz\algorytm_genetyczny- pankiewicz łukasz\źródło1.cpp(160): error C2108: indeks dolny nie jest typem całkowitym
+e:\laboratoria\metody optymalizacij\algorytm_genetyczny- pankiewicz łukasz\algorytm_genetyczny- pankiewicz łukasz\źródło1.cpp(165): warning C4244: "argument": konwersja z "time_t" do "unsigned int", możliwa utrata danych
+e:\laboratoria\metody optymalizacij\algorytm_genetyczny- pankiewicz łukasz\algorytm_genetyczny- pankiewicz łukasz\źródło1.cpp(180): error C3861: "selection": identyfikatora nie odnaleziono
+e:\laboratoria\metody optymalizacij\algorytm_genetyczny- pankiewicz łukasz\algorytm_genetyczny- pankiewicz łukasz\źródło1.cpp(182): error C2660: "mutation": funkcja nie przyjmuje 1 argumentów
+e:\laboratoria\metody optymalizacij\algorytm_genetyczny- pankiewicz łukasz\algorytm_genetyczny- pankiewicz łukasz\źródło1.cpp(187): error C2065: "geneneration": niezadeklarowany identyfikator
+  Źródło.cpp
+e:\laboratoria\metody optymalizacij\algorytm_genetyczny- pankiewicz łukasz\algorytm_genetyczny- pankiewicz łukasz\źródło.cpp(30): error C2143: błąd składniowy: brakuje „;” przed „*”
+e:\laboratoria\metody optymalizacij\algorytm_genetyczny- pankiewicz łukasz\algorytm_genetyczny- pankiewicz łukasz\źródło.cpp(30): error C4430: brak specyfikatora typu - założono, że int. Uwaga: C++ nie obsługuje domyślnie typu int
+e:\laboratoria\metody optymalizacij\algorytm_genetyczny- pankiewicz łukasz\algorytm_genetyczny- pankiewicz łukasz\źródło.cpp(31): error C4430: brak specyfikatora typu - założono, że int. Uwaga: C++ nie obsługuje domyślnie typu int
+e:\laboratoria\metody optymalizacij\algorytm_genetyczny- pankiewicz łukasz\algorytm_genetyczny- pankiewicz łukasz\źródło.cpp(31): error C2059: błąd składniowy: „{”
+e:\laboratoria\metody optymalizacij\algorytm_genetyczny- pankiewicz łukasz\algorytm_genetyczny- pankiewicz łukasz\źródło.cpp(31): error C2143: błąd składniowy: brakuje „;” przed „{”
+e:\laboratoria\metody optymalizacij\algorytm_genetyczny- pankiewicz łukasz\algorytm_genetyczny- pankiewicz łukasz\źródło.cpp(31): error C2447: "{": brak nagłówka funkcji (stary styl formalnej listy?)
+e:\laboratoria\metody optymalizacij\algorytm_genetyczny- pankiewicz łukasz\algorytm_genetyczny- pankiewicz łukasz\źródło.cpp(58): warning C4244: "+=": konwersja z "double" do "float", możliwa utrata danych
+e:\laboratoria\metody optymalizacij\algorytm_genetyczny- pankiewicz łukasz\algorytm_genetyczny- pankiewicz łukasz\źródło.cpp(92): error C2143: błąd składniowy: brakuje „;” przed „for”
+e:\laboratoria\metody optymalizacij\algorytm_genetyczny- pankiewicz łukasz\algorytm_genetyczny- pankiewicz łukasz\źródło.cpp(105): error C2065: "popsize": niezadeklarowany identyfikator
+e:\laboratoria\metody optymalizacij\algorytm_genetyczny- pankiewicz łukasz\algorytm_genetyczny- pankiewicz łukasz\źródło.cpp(114): error C2660: "cross": funkcja nie przyjmuje 2 argumentów
+e:\laboratoria\metody optymalizacij\algorytm_genetyczny- pankiewicz łukasz\algorytm_genetyczny- pankiewicz łukasz\źródło.cpp(129): error C2143: błąd składniowy: brakuje „;” przed „if”
+e:\laboratoria\metody optymalizacij\algorytm_genetyczny- pankiewicz łukasz\algorytm_genetyczny- pankiewicz łukasz\źródło.cpp(139): error C2297: "*": niedozwolone, prawy operand jest typu "Individual [50]"
+e:\laboratoria\metody optymalizacij\algorytm_genetyczny- pankiewicz łukasz\algorytm_genetyczny- pankiewicz łukasz\źródło.cpp(139): error C2660: "initialization": funkcja nie przyjmuje 5 argumentów
+  Generowanie kodu...

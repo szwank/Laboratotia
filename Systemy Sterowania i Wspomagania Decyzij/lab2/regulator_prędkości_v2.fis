@@ -1,0 +1,34 @@
+[System]
+Name='regulator_prędkości_v2'
+Type='mamdani'
+Version=2.0
+NumInputs=1
+NumOutputs=1
+NumRules=4
+AndMethod='min'
+OrMethod='max'
+ImpMethod='min'
+AggMethod='max'
+DefuzzMethod='centroid'
+
+[Input1]
+Name='input1'
+Range=[-70 70]
+NumMFs=3
+MF1='mf1':'gbellmf',[35 2.5 -70]
+MF2='mf2':'gbellmf',[8.33333333333336 2.35 0]
+MF3='mf5':'gbellmf',[35 2.5 70]
+
+[Output1]
+Name='output1'
+Range=[-50 50]
+NumMFs=3
+MF1='duże_tarcie':'gaussmf',[20.3342917793825 50]
+MF2='małe_tarcie':'gbellmf',[7.8 1.58 -0.318518518518527]
+MF3='mf3':'gaussmf',[21.23 -50]
+
+[Rules]
+1, 2 (1) : 1
+3, 2 (1) : 1
+2, 3 (1) : 1
+2, 1 (1) : 1

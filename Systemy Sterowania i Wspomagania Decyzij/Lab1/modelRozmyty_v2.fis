@@ -1,0 +1,72 @@
+[System]
+Name='modelRozmyty_v2'
+Type='sugeno'
+Version=2.0
+NumInputs=1
+NumOutputs=5
+NumRules=9
+AndMethod='prod'
+OrMethod='probor'
+ImpMethod='prod'
+AggMethod='sum'
+DefuzzMethod='wtaver'
+
+[Input1]
+Name='input1'
+Range=[-3.14159265358979 3.14159265358979]
+NumMFs=9
+MF1='-180':'trimf',[-3.927 -3.142 -2.356]
+MF2='-135':'trimf',[-3.142 -2.356 -1.571]
+MF3='-90':'trimf',[-2.356 -1.571 -0.7854]
+MF4='-45':'trimf',[-1.571 -0.7854 1.11e-16]
+MF5='0':'trimf',[-0.7854 6.939e-18 0.7854]
+MF6='45':'trimf',[-1.11e-16 0.7854 1.571]
+MF7='90':'trimf',[0.7854 1.571 2.356]
+MF8='135':'trimf',[1.571 2.356 3.142]
+MF9='180':'trimf',[2.356 3.142 3.927]
+
+[Output1]
+Name='0'
+Range=[0 1]
+NumMFs=2
+MF1='0_1':'constant',[1]
+MF2='0_0':'constant',[0]
+
+[Output2]
+Name='45'
+Range=[0 1]
+NumMFs=2
+MF1='45_1':'constant',[1]
+MF2='45_0':'constant',[0]
+
+[Output3]
+Name='90'
+Range=[0 1]
+NumMFs=2
+MF1='90_1':'constant',[1]
+MF2='90_0':'constant',[0]
+
+[Output4]
+Name='135'
+Range=[0 1]
+NumMFs=2
+MF1='135_1':'constant',[1]
+MF2='135_0':'constant',[0]
+
+[Output5]
+Name='180'
+Range=[0 1]
+NumMFs=2
+MF1='180_1':'constant',[1]
+MF2='180_0':'constant',[0]
+
+[Rules]
+5, 1 2 2 2 2 (1) : 1
+4, 2 1 2 2 2 (1) : 1
+6, 2 1 2 2 2 (1) : 1
+7, 2 2 1 2 2 (1) : 1
+3, 2 2 1 2 2 (1) : 1
+2, 2 2 2 1 2 (1) : 1
+8, 2 2 2 1 2 (1) : 1
+9, 2 2 2 2 1 (1) : 1
+1, 2 2 2 2 1 (1) : 1

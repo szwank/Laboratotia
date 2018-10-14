@@ -1,0 +1,29 @@
+CC     = "C:\Program Files\MATLAB\R2017a\sys\lcc64\lcc64\bin\lcc64.exe"
+LD     = "C:\Program Files\MATLAB\R2017a\sys\lcc64\lcc64\bin\lcclnk64.exe"
+LIBCMD = "C:\Program Files\MATLAB\R2017a\sys\lcc64\lcc64\bin\lcclib64.exe"
+CFLAGS = -dll -noregistrylookup  -c -Zp8 -DLCC_WIN64 -DMATLAB_MEX_FILE -DMX_COMPAT_32 -nodeclspec 
+LDFLAGS = -s -dll -L"C:\Program Files\MATLAB\R2017a\sys\lcc64\lcc64\lib64" -entry LibMain -map sfun.map 
+LIBFLAGS = 
+
+OBJECTS = \
+	"modelWachadla_sfun.obj"\
+	"c3_modelWachadla.obj"\
+	"c4_modelWachadla.obj"\
+	"modelWachadla_sfun_registry.obj"\
+	"lccstub.obj"\
+
+INCLUDE_PATH= -I"C:\Program Files\MATLAB\R2017a\sys\lcc64\lcc64\include64"  -I"C:\Program Files\MATLAB\R2017a\extern\include"  -I"C:\Program Files\MATLAB\R2017a\simulink\include"  -I"C:\Program Files\MATLAB\R2017a\simulink\include\sf_runtime"  -I"C:\Program Files\MATLAB\R2017a\stateflow\c\mex\include"  -I"C:\Program Files\MATLAB\R2017a\rtw\c\src"  -I"G:\laboratoria\Systemy Sterowania i Wspomagania Decyzij\Lab1\slprj\_sfprj\modelWachadla\_self\sfun\src" 
+ 
+
+modelWachadla_sfun.mexw64 : $(MAKEFILE) $(OBJECTS)
+	$(LD) $(LDFLAGS) -o modelWachadla_sfun.mexw64 @modelWachadla_sfun.lmko
+modelWachadla_sfun.obj :	"modelWachadla_sfun.c"
+	$(CC) $(CFLAGS) $(INCLUDE_PATH) "modelWachadla_sfun.c"
+c3_modelWachadla.obj :	"c3_modelWachadla.c"
+	$(CC) $(CFLAGS) $(INCLUDE_PATH) "c3_modelWachadla.c"
+c4_modelWachadla.obj :	"c4_modelWachadla.c"
+	$(CC) $(CFLAGS) $(INCLUDE_PATH) "c4_modelWachadla.c"
+modelWachadla_sfun_registry.obj :	"modelWachadla_sfun_registry.c"
+	$(CC) $(CFLAGS) $(INCLUDE_PATH) "modelWachadla_sfun_registry.c"
+lccstub.obj :	"C:\Program Files\MATLAB\R2017a\sys\lcc64\lcc64\mex\lccstub.c"
+	$(CC) $(CFLAGS) $(INCLUDE_PATH) "C:\Program Files\MATLAB\R2017a\sys\lcc64\lcc64\mex\lccstub.c"

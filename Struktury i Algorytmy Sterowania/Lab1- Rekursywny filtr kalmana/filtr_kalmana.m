@@ -206,7 +206,10 @@ Z = [10 0;                 % inicjalizacja Z
 V = [10 0;                     % inicjalizacja V
      0 10];                   
                    
-G = Bd; 
+G = [0 0;                % inicjalizacja G
+      0 0;
+      0.0001 * 2 0;
+      0 0.0001 * 5]; 
  
 xHat = block.Dwork(1).Data;    % podstawienie za xHat
 

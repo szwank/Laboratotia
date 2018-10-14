@@ -45,7 +45,7 @@ d2 = subs(d2, [u1, u2, aPrim1, aPrim2, a1, a2], [u10, u20, aPrim10, aPrim20, a10
 B = [0 0; 0 0; double(d1); double(d2)]
 %rów wyjœcia
 %opcja 1 czyli sensory prêdkoœci i po³o¿enia, stan jest dostêpny pomiarowo
-C = [1 0 0 0; 0 1 0 0; 0 0 1 0; 0 0 0 1];
+C = [1 0 0 0; 0 1 0 0];
 
 %% STEROWANIE5
 %sprawdzam sterowalnoœæ
@@ -55,6 +55,8 @@ Q = [100 0 0 0; 0 100 0 0; 0 0 1 0; 0 0 0 1];
 R = [1,0 ; 0,1];
 L = lqr(A,B,Q,R)
 %L = place(A,B,[-1, -2, -3, -4])
+
+M = inv(C * (B * L - A)^-1 * B)
 
 
 

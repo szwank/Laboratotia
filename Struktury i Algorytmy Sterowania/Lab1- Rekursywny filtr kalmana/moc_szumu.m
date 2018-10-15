@@ -1,9 +1,9 @@
 % noiseSignal =  wgn(100000,1, 10 * log10(0.1));
 moc = 0;
 srednia = 0;
-for i = 1:length(simout.Data) - 1
+for i = 1:length(simout3.Data) - 1
     
-    moc = 0.0001 * simout.Data(i)^2 + moc;
+    moc = 0.01 * simout3.Data(i)^2 + moc;
     srednia = simout.Data(i) + srednia;
     
     

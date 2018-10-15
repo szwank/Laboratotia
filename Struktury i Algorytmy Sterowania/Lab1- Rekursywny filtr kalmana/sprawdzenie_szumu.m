@@ -4,7 +4,7 @@ Z = 0;
 suma = 0;
 for i = 1:length(noiseSignal) - 1
     
-    Z = (noiseSignal(i)-0.2) * (noiseSignal(i)-0.2)' + Z;
+    Z = (noiseSignal(i)) * (noiseSignal(i))' + Z;
     
     
 end

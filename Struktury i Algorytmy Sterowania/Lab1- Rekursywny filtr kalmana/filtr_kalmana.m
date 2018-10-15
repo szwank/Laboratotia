@@ -103,7 +103,7 @@ block.RegBlockMethod('Terminate', @Terminate); % Required
 %%   C-Mex counterpart: mdlSetWorkWidths
 %%
 function DoPostPropSetup(block)
-block.NumDworks = 5;
+block.NumDworks = 8;
   
   block.Dwork(1).Name            = 'xHat';
   block.Dwork(1).Dimensions      = 4;
@@ -134,6 +134,25 @@ block.NumDworks = 5;
   block.Dwork(5).DatatypeID      = 0;      % double
   block.Dwork(5).Complexity      = 'Real'; % real
   block.Dwork(5).UsedAsDiscState = true;
+  
+  block.Dwork(6).Name            = 'H';
+  block.Dwork(6).Dimensions      = 2;
+  block.Dwork(6).DatatypeID      = 0;      % double
+  block.Dwork(6).Complexity      = 'Real'; % real
+  block.Dwork(6).UsedAsDiscState = true;
+  
+  
+  block.Dwork(7).Name            = 'F';
+  block.Dwork(7).Dimensions      = 2;
+  block.Dwork(7).DatatypeID      = 0;      % double
+  block.Dwork(7).Complexity      = 'Real'; % real
+  block.Dwork(7).UsedAsDiscState = true;
+  
+  block.Dwork(8).Name            = 'iteracja';
+  block.Dwork(8).Dimensions      = 1;
+  block.Dwork(8).DatatypeID      = 0;      % double
+  block.Dwork(8).Complexity      = 'Real'; % real
+  block.Dwork(8).UsedAsDiscState = true;
   
 
 %%
@@ -175,6 +194,11 @@ block.Dwork(5).Data = P0(4,:);
 block.Dwork(1).Data = block.DialogPrm(1).Data;      % nadpisanie w pierwszej iteracij xHat = x0
 
 
+block.Dwork(6).Data = [-0.2 - 0.0128; -0.2 - 0.0128];             % H: korekta U
+block.Dwork(7).Data = [-0.2 - 0.0128; -0.2 - 0.0128];             % F: korekta y
+
+block.Dwork(8).Data = 100000000;          % numer iteracij + 1000
+
 % Wyznaczenie P0
 
 %end Start
@@ -200,20 +224,20 @@ Bd = [0 0;                % inicjalizacja Bd
 Cd = [1 0 0 0;                 % inicjalizacja Cd
       0 1 0 0];
 
-Z = [1 0;                 % inicjalizacja Z
-     0 1];
+Z = [0.001 0;                 % inicjalizacja Z
+     0 0.001];
                    
-V = [1 0;                     % inicjalizacja V
-     0 1];                   
+V = [0.001 0;                     % inicjalizacja V
+     0 0.001];                   
                    
 G = [0 0;                % inicjalizacja G
       0 0;
-      0.001 0;
-      0 0.001];
+      0.0005 0;
+      0 0.0005];
   
-H = [-0.2; -0.2];             % korekta U
+   block.Dwork(6).Data = block.Dwork(6).Data + block.InputPort(1).Data / block.Dwork(8).Data;  % H = H + iteracja * u
+   block.Dwork(7).Data = block.Dwork(7).Data + block.InputPort(2).Data / block.Dwork(8).Data;  % F = F + iteracja * u
 
-F = [-0.2; -0.2];             % korekta y
  
 xHat = block.Dwork(1).Data;    % podstawienie za xHat
 
@@ -223,7 +247,7 @@ P = [block.Dwork(2).Data';      % z³o¿enie macierzy P
      block.Dwork(5).Data'];
 
 % xHat_kk1:
-xHat_kk1 = Ad * xHat + Bd * (block.InputPort(1).Data + H); %(Ad * x + Bd * u)
+xHat_kk1 = Ad * xHat + Bd * (block.InputPort(1).Data + block.Dwork(6).Data); %(Ad * x + Bd * (u+H))
 
 % P_kk1:
 P_kk1 = Ad * P * Ad' + G * Z * G';   %(P_kk1 = Ad * P * Ad' + G * Z * G')
@@ -240,8 +264,10 @@ block.Dwork(4).Data = P(3,:);
 block.Dwork(5).Data = P(4,:);
                   
 % xHat:                  
-block.OutputPort(1).Data = xHat_kk1 + K * (block.InputPort(2).Data + F - ...
-                           Cd * xHat_kk1); % xHat_kk1 + K * [y - Cd * xHat_kk1]
+block.OutputPort(1).Data = xHat_kk1 + K * (block.InputPort(2).Data + block.Dwork(7).Data - ...
+                           Cd * xHat_kk1); % xHat_kk1 + K * [(y+F) - Cd * xHat_kk1]
+                       
+block.Dwork(8).Data = block.Dwork(8).Data + 1;  % zwiêkszenie numeru iteracij
 %end Outputs
 
 %%

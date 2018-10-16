@@ -194,8 +194,8 @@ block.Dwork(5).Data = P0(4,:);
 block.Dwork(1).Data = block.DialogPrm(1).Data;      % nadpisanie w pierwszej iteracij xHat = x0
 
 
-block.Dwork(6).Data = [-0.2 - 0.0128; -0.2 - 0.0128];             % H: korekta U
-block.Dwork(7).Data = [-0.2 - 0.0128; -0.2 - 0.0128];             % F: korekta y
+block.Dwork(6).Data = [-0.2 ; -0.2 ];             % H: korekta U
+block.Dwork(7).Data = [-0.2 ; -0.2 ];             % F: korekta y
 
 block.Dwork(8).Data = 100000000;          % numer iteracij + 1000
 

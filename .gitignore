@@ -1,7 +1,7 @@
 # Simulink code generation folders
-/slprj/
-/sccprj/
-Struktury i Algorytmy Sterowania\Lab1- Rekursywny filtr kalmana/slprj/
+slprj/
+sccprj/
+
 
 # Windows default autosave extension
 *.asv

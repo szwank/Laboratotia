@@ -1,4 +1,3 @@
-
 noiseSignal =  wgn(100000000,1, 10 * log10(0.1));
 Z = 0;
 suma = 0;

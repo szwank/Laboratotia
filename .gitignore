@@ -1,20 +1,20 @@
 # Simulink code generation folders
-#slprj/
-#sccprj/
+slprj/
+sccprj/
 
 
 # Windows default autosave extension
-#*.asv
+*.asv
 
 # OSX / *nix default autosave extension
 *.m~
 
 # Compiled MEX binaries (all platforms)
-#*.mex*
+*.mex*
 
 # Packaged app and toolbox files
-#*.mlappinstall
-#*.mltbx
+*.mlappinstall
+*.mltbx
 
 # Generated helpsearch folders
 helpsearch*/
@@ -23,23 +23,23 @@ helpsearch*/
 codegen/
 
 # Simulink autosave extension
-#*.autosave
-#*slx.autosave
+*.autosave
+*slx.autosave
 
 
 # Octave session info
 octave-workspace
 
 # Zdjêcia
-#*.jpg
-#*.pgn
-/Metody sztucznej inteligencij/lab3/*.png #dodanie zdjêæ w tym folderze
+*.jpg
+*.png
+!/Metody sztucznej inteligencij/lab3/*.png #dodanie zdjêæ w tym folderze
 
 # Foldery
-#APP/
-#Debug/
-#.vs/
+APP/
+Debug/
+.vs/
 
 # Spakowane pliki
-#*.zip
-#*.rar
+*.zip
+*.rar

@@ -10,7 +10,7 @@
  * (i.e. replace sfuntmpl_basic with the name of your S-function).
  */
 
-#define S_FUNCTION_NAME  filtr_kalmana
+#define S_FUNCTION_NAME  filtr_kalmanaaa
 #define S_FUNCTION_LEVEL 2
 
 /*

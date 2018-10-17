@@ -62,9 +62,21 @@ B = [0 0; 0 0; double(d1); double(d2)]
 
 C = [1 0 0 0; 0 1 0 0];
 
-%% Sterowanie
-
-sterowanie = rank(ctrb(A,B))
+%% Linearyzacja przez sprzê¿enie zwrotne- sprzê¿enie zwrotne z ca³k¹
+% wyznaczenie macierzy A, B, C dla liniowego uk³adu po na³o¿eniu pêtli
+% linearyzuj¹cej
+A = [0 0 1 0;
+     0 0 0 1;
+     0 0 0 0;
+     0 0 0 0];
+B = [0 0;
+     0 0;
+     1 0;
+     0 1];
+C = [1 0 0 0
+     0 1 0 0];
+ 
+ sterowanie = rank(ctrb(A,B))
 
 Q = [100 0 0 0;
      0 100 0 0;
@@ -76,14 +88,14 @@ L = lqr(A, B, Q, R)
 %L = place(A,B,[-1, -2, -3, -4])
 
 M = inv(C * (B * L - A)^-1 * B)
-
-%% Linearyzacja przez sprzê¿enie zwrotne- sprzê¿enie zwrotne z ca³k¹
-
+ 
 A_falka = [A zeros(4,2);
-     -C zeros(2,2)];
+          -C zeros(2,2)];
 B_falka = [B ;
            zeros(2,2)];
 C_falka = [C zeros(2)];
+
+sterowanie_z_calka = rank(ctrb(A_falka,B_falka))
 
 Q = [100 0 0 0 0 0;
      0 100 0 0 0 0;

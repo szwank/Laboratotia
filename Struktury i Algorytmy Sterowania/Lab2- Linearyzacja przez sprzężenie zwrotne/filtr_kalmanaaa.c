@@ -61,7 +61,7 @@ static void mdlInitializeSizes(SimStruct *S)
         return;
     }
 
-    ssSetNumContStates(S, 0);
+    ssSetNumContStates(S, 1);
     ssSetNumDiscStates(S, 0);
 
     if (!ssSetNumInputPorts(S, 1)) return;
@@ -121,8 +121,15 @@ static void mdlInitializeSampleTimes(SimStruct *S)
    *    restarts execution to reset the states.
    */
   static void mdlInitializeConditions(SimStruct *S)
-  {
-  }
+{
+    real_T *x0 = ssGetContStates(S);
+    const real_T *u = (const real_T*) ssGetInputPortSignal(S,0);
+    int_T lp;
+
+    for (lp=0;lp<1;lp++) {
+        *x0++=*u;
+    }
+}
 #endif /* MDL_INITIALIZE_CONDITIONS */
 
 
@@ -150,8 +157,9 @@ static void mdlInitializeSampleTimes(SimStruct *S)
 static void mdlOutputs(SimStruct *S, int_T tid)
 {
     const real_T *u = (const real_T*) ssGetInputPortSignal(S,0);
+    real_T *x = ssGetContStates(S);
     real_T       *y = ssGetOutputPortSignal(S,0);
-    y[0] = u[0];
+    y[0] = x[0];
 }
 
 
@@ -180,8 +188,14 @@ static void mdlOutputs(SimStruct *S, int_T tid)
    *    The derivatives are placed in the derivative vector, ssGetdX(S).
    */
   static void mdlDerivatives(SimStruct *S)
-  {
-  }
+{
+    real_T            *dx    = ssGetdX(S);
+    real_T            *x     = ssGetContStates(S);
+    //InputRealPtrsType U  = ssGetInputPortRealSignalPtrs(S,0); // Get pointers to signals of type double connected to an input port
+    const real_T *u = (const real_T*) ssGetInputPortSignal(S,0);
+    /* xdot = Ax + Bu */
+    dx[0] = u[0];
+}
 #endif /* MDL_DERIVATIVES */
 
 

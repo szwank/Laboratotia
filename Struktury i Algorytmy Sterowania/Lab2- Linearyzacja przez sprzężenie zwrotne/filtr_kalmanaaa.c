@@ -19,6 +19,27 @@
  */
 #include "simstruc.h"
 
+    
+
+    /*static real_T Bd[4][2]={ {  0      ,  0         } ,
+                             {  0      ,  0         } ,
+                             {  0.0001 ,  0         } ,
+                             {  0      ,  0.0001    } 
+                           };
+
+    static real_T Cd[2][4]={ {  1, 0, 0, 0  } ,
+                             {  0, 1, 0, 0  } 
+                           };
+                           
+    static real_T Z[2][2]={ {  1,  0  } ,               // definicja macierzy potrzebnych do filtru kalmana
+                            {  0,  1  } 
+                          };
+                          
+    static real_T V[2][2]={ {  1,  0  } ,               // definicja macierzy potrzebnych do filtru kalmana
+                            {  0,  1  } 
+                          };
+     */
+
 
 
 /* Error handling
@@ -144,6 +165,7 @@ static void mdlInitializeSampleTimes(SimStruct *S)
    */
   static void mdlStart(SimStruct *S)
   {
+                        
   }
 #endif /*  MDL_START */
 
@@ -156,6 +178,15 @@ static void mdlInitializeSampleTimes(SimStruct *S)
  */
 static void mdlOutputs(SimStruct *S, int_T tid)
 {
+    
+    static real_T Ad={ { 1, 0, 0.0001, 0     }  // zdefiniowanie macierzy systemu dyskretnego po linearyzacij
+                       { 0, 1, 0     , 0.0001}  // operator static- powoduje dodanie zmiennej do pamiêci globalnej
+                       { 0, 0, 1,    , 0     } 
+                       { 0, 0, 0,    , 1     }
+                      };
+    
+    //static real_t G = Bd;
+    
     const real_T *u = (const real_T*) ssGetInputPortSignal(S,0);
     real_T *x = ssGetContStates(S);
     real_T       *y = ssGetOutputPortSignal(S,0);

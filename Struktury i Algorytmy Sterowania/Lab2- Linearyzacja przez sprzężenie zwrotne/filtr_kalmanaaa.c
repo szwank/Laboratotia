@@ -204,8 +204,16 @@ static void mdlOutputs(SimStruct *S, int_T tid)
                              { 0, 0, 1     , 0     } ,
                              { 0, 0, 0     , 1     }
                            };
+    static real_T Bd[4][2]={ { 0     , 0     } , // zdefiniowanie macierzy systemu dyskretnego po linearyzacij
+                             { 0     , 0     } , // operator static- powoduje dodanie zmiennej do pamiêci globalnej
+                             { 0.0001, 0     } ,
+                             { 0     , 0.0001}
+                           };
+    static real_T Cd[2][4]={ { 1, 0, 0, 0} , // zdefiniowanie macierzy systemu dyskretnego po linearyzacij
+                             { 0, 1, 0, 0}  // operator static- powoduje dodanie zmiennej do pamiêci globalnej                           
+                           };                      
     
-    //static real_t G = Bd;
+    static real_t G = Bd;
     
     const real_T *u = (const real_T*) ssGetInputPortSignal(S,0);
     real_T *x = ssGetContStates(S);

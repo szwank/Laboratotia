@@ -18,7 +18,7 @@
  * its associated macro definitions.
  */
 #include "simstruc.h"
-real_T *mxArrayToArray(const mxArray *sPtr, const char *fName)
+real_T *mxArrayToArray(const mxArray *sPtr)
 {
     mwSize nElements;       /* number of elements in array */
     mwIndex eIdx;           /* element index */
@@ -40,27 +40,6 @@ real_T *mxArrayToArray(const mxArray *sPtr, const char *fName)
     return array;
 }
     
-
-    /*static real_T Bd[4][2]={ {  0      ,  0         } ,
-                             {  0      ,  0         } ,
-                             {  0.0001 ,  0         } ,
-                             {  0      ,  0.0001    } 
-                           };
-
-    static real_T Cd[2][4]={ {  1, 0, 0, 0  } ,
-                             {  0, 1, 0, 0  } 
-                           };
-                           
-    static real_T Z[2][2]={ {  1,  0  } ,               // definicja macierzy potrzebnych do filtru kalmana
-                            {  0,  1  } 
-                          };
-                          
-    static real_T V[2][2]={ {  1,  0  } ,               // definicja macierzy potrzebnych do filtru kalmana
-                            {  0,  1  } 
-                          };
-     */
-
-
 
 /* Error handling
  * --------------
@@ -96,7 +75,7 @@ real_T *mxArrayToArray(const mxArray *sPtr, const char *fName)
  */
 static void mdlInitializeSizes(SimStruct *S)
 {
-    ssSetNumSFcnParams(S, 0);  /* Number of expected parameters */
+    ssSetNumSFcnParams(S, 1);  /* Number of expected parameters */
     if (ssGetNumSFcnParams(S) != ssGetSFcnParamsCount(S)) {
         /* Return if number of expected != number of actual parameters */
         return;
@@ -185,7 +164,15 @@ static void mdlInitializeSampleTimes(SimStruct *S)
    */
   static void mdlStart(SimStruct *S)
   {
-                        
+      const mxArray *parameter = ssGetSFcnParam(S, 0);
+      real_T *x0 = mxArrayToArray(parameter);
+      real_T *x = ssGetDWork(S,0);
+      
+      for(int i = 0; i < 4; i++)
+      {
+          x[i] = x0[i];
+      }
+                
   }
 #endif /*  MDL_START */
 
@@ -213,7 +200,11 @@ static void mdlOutputs(SimStruct *S, int_T tid)
                              { 0, 1, 0, 0}  // operator static- powoduje dodanie zmiennej do pamiêci globalnej                           
                            };                      
     
-    static real_t G = Bd;
+    static real_T G[4][2] = { { 0     , 0     } , // zdefiniowanie macierzy systemu dyskretnego po linearyzacij
+                              { 0     , 0     } , // operator static- powoduje dodanie zmiennej do pamiêci globalnej
+                              { 0.0001, 0     } ,
+                              { 0     , 0.0001}
+                            };
     
     static real_T Z[2][2]={ { 1     , 0     } , 
                             { 0     , 1     }  // operator static- powoduje dodanie zmiennej do pamiêci globalnej                             
@@ -246,7 +237,7 @@ static void mdlOutputs(SimStruct *S, int_T tid)
 
 
 
-#define MDL_DERIVATIVES  /* Change to #undef to remove function */
+#undef MDL_DERIVATIVES  /* Change to #undef to remove function */
 #if defined(MDL_DERIVATIVES)
   /* Function: mdlDerivatives =================================================
    * Abstract:

@@ -215,6 +215,13 @@ static void mdlOutputs(SimStruct *S, int_T tid)
     
     static real_t G = Bd;
     
+    static real_T Z[2][2]={ { 1     , 0     } , 
+                            { 0     , 1     }  // operator static- powoduje dodanie zmiennej do pamiêci globalnej                             
+                           };
+    static real_T V[2][2]={ { 1     , 0     } , 
+                            { 0     , 1     }  // operator static- powoduje dodanie zmiennej do pamiêci globalnej                             
+                           };                           
+    
     const real_T *u = (const real_T*) ssGetInputPortSignal(S,0);
     real_T *x = ssGetContStates(S);
     real_T       *y = ssGetOutputPortSignal(S,0);

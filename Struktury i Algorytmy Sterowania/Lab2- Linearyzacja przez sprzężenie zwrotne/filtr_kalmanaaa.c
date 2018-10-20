@@ -18,7 +18,27 @@
  * its associated macro definitions.
  */
 #include "simstruc.h"
-
+real_T *mxArrayToArray(const mxArray *sPtr, const char *fName)
+{
+    mwSize nElements;       /* number of elements in array */
+    mwIndex eIdx;           /* element index */
+    const mxArray *fPtr;    /* field pointer */
+    const char *field;
+    real_T *array;           /* value to calculate */
+   
+    nElements = (mwSize)mxGetNumberOfElements(sPtr);
+    for (eIdx = 0; eIdx < nElements; eIdx++) {
+        fPtr = mxGetField(sPtr, eIdx, field);
+        if ((fPtr != NULL) 
+            && (mxGetClassID(fPtr) == mxDOUBLE_CLASS) 
+            && (!mxIsComplex(fPtr))) 
+        {
+            array[eIdx] = *mxGetPr(fPtr);
+            
+        }
+    }
+    return array;
+}
     
 
     /*static real_T Bd[4][2]={ {  0      ,  0         } ,
@@ -179,11 +199,11 @@ static void mdlInitializeSampleTimes(SimStruct *S)
 static void mdlOutputs(SimStruct *S, int_T tid)
 {
     
-    static real_T Ad={ { 1, 0, 0.0001, 0     }  // zdefiniowanie macierzy systemu dyskretnego po linearyzacij
-                       { 0, 1, 0     , 0.0001}  // operator static- powoduje dodanie zmiennej do pamiêci globalnej
-                       { 0, 0, 1,    , 0     } 
-                       { 0, 0, 0,    , 1     }
-                      };
+    static real_T Ad[4][4]={ { 1, 0, 0.0001, 0     } , // zdefiniowanie macierzy systemu dyskretnego po linearyzacij
+                             { 0, 1, 0     , 0.0001} , // operator static- powoduje dodanie zmiennej do pamiêci globalnej
+                             { 0, 0, 1     , 0     } ,
+                             { 0, 0, 0     , 1     }
+                           };
     
     //static real_t G = Bd;
     

@@ -81,7 +81,7 @@ static void mdlInitializeSizes(SimStruct *S)
         return;
     }
 
-    ssSetNumContStates(S, 1);
+    ssSetNumContStates(S, 0);
     ssSetNumDiscStates(S, 0);
 
     if (!ssSetNumInputPorts(S, 1)) return;
@@ -172,7 +172,7 @@ static void mdlInitializeSampleTimes(SimStruct *S)
       {
           x[i] = x0[i];
       }
-                
+      free(x0);          
   }
 #endif /*  MDL_START */
 

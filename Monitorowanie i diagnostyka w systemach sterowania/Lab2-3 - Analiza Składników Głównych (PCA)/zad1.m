@@ -1,0 +1,1 @@
+dane_zad1

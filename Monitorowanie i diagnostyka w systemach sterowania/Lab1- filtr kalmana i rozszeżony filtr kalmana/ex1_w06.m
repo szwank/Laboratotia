@@ -11,7 +11,7 @@ rng('default'); rng(8787);          % parametry generatora liczb losowych
 
 a=1;                                % przyspieszenie pojazdu [m/s^2]
 Ts=50;                             % krok symulacji [s]
-t=0:Ts:1000;                          % czas symulacji [s] 
+t=0:Ts:10000;                          % czas symulacji [s] 
  
 m=3;								% rz¹d modelu procesu
 dq=1; 								% odchylenie standardowe szumu procesu
@@ -69,14 +69,16 @@ for k = 1:length(t)
         xe=x1+KA*(z-z1);
       % OBLICZENIE MACIERZY WARIANCJI ESTYMATY P(k+1/k+1)
         P=(I-KA*C)*P1;
-      
-      % - ARCHIWIZACJA DANYCH
+        
+          % - ARCHIWIZACJA DANYCH
       % HISTORIA ESTYMACJI
         XP=[XP; x1'];
         XE=[XE; xe'];
         XX=[XX; x'];
         ZZ=[ZZ; z'];
         KK=[KK; (KA(:,1))'];
+      
+      
 end
 
 % WIZUALIZACJA WYNIKÓW

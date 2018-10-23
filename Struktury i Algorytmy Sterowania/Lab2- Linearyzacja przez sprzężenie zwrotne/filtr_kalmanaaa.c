@@ -99,6 +99,8 @@ static void mdlInitializeSizes(SimStruct *S)
 
     ssSetNumSampleTimes(S, 1);
     ssSetNumRWork(S, 0);
+	ssSetNumDWork(S, 1);            //zainicjowanie zmiennej DWork
+    ssSetDWorkWidth(S, 0, 4);        // x[4]
     ssSetNumIWork(S, 0);
     ssSetNumPWork(S, 0);
     ssSetNumModes(S, 0);
@@ -127,7 +129,7 @@ static void mdlInitializeSampleTimes(SimStruct *S)
 
 
 
-#define MDL_INITIALIZE_CONDITIONS   /* Change to #undef to remove function */
+#undef MDL_INITIALIZE_CONDITIONS   /* Change to #undef to remove function */
 #if defined(MDL_INITIALIZE_CONDITIONS)
   /* Function: mdlInitializeConditions ========================================
    * Abstract:
@@ -168,7 +170,7 @@ static void mdlInitializeSampleTimes(SimStruct *S)
       real_T *x0 = mxArrayToArray(parameter);
       real_T *x = ssGetDWork(S,0);
       
-      for(int i = 0; i < 4; i++)
+      for(int_T i = 0; i < 4; i++)
       {
           x[i] = x0[i];
       }
@@ -214,7 +216,8 @@ static void mdlOutputs(SimStruct *S, int_T tid)
                            };                           
     
     const real_T *u = (const real_T*) ssGetInputPortSignal(S,0);
-    real_T *x = ssGetContStates(S);
+    real_T *x = ssGetDWork(S, 0);
+    //real_T *x = ssGetContStates(S);
     real_T       *y = ssGetOutputPortSignal(S,0);
     y[0] = x[0];
 }
@@ -251,7 +254,7 @@ static void mdlOutputs(SimStruct *S, int_T tid)
     //InputRealPtrsType U  = ssGetInputPortRealSignalPtrs(S,0); // Get pointers to signals of type double connected to an input port
     const real_T *u = (const real_T*) ssGetInputPortSignal(S,0);
     /* xdot = Ax + Bu */
-    dx[0] = u[0];
+    dx[0] = x[0];
 }
 #endif /* MDL_DERIVATIVES */
 

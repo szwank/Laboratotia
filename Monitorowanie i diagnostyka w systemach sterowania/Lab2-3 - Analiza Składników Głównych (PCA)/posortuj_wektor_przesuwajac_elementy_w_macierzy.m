@@ -3,7 +3,8 @@ function [ posortowany_wektor_wartosci_wlasnych, posortowana_macierz_wekorow_wla
 %jednoczeœnie odpowiadaj¹ce mu elementy macierzy wektorów w³asnych
 %   Detailed explanation goes here
 if length(macierz_wekorow_wlasnych(1,:)) ~= length(wektor_wartosci_wlasnych)
-   error('D³ugoœci macierzy  wektora s¹ ró¿ne!!') 
+   error('Posortuj wektor przesuwajac elementy w macierzy:',...
+         'D³ugoœci macierzy  wektora s¹ ró¿ne!!') 
 end
 
 wektor_wartosci_wlasnych_kopja = wektor_wartosci_wlasnych;  % przekopjowanie wektora, dzia³anie na kopij

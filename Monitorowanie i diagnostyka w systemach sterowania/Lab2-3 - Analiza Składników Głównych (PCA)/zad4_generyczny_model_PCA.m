@@ -1,3 +1,4 @@
 load dane_zad1
-
-stworzPCA(X)
+X = rand(15,4);
+XT = rand(4,4);
+stworzPCA(X, XT)

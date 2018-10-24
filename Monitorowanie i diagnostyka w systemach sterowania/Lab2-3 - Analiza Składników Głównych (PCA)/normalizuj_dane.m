@@ -37,7 +37,7 @@ if nargin == 1              % Przypadek jednego argumentu
     X_norm = (X - ones(length(X(:,1)), 1) * X_mean) * inv(odchylenie_standardowe);
     
     
-elseif narfin == 3          % przypadek gdy podam 3 argumenty(wartoœci œredniej i odchylenia s¹ wyliczone)
+elseif nargin == 3          % przypadek gdy podam 3 argumenty(wartoœci œredniej i odchylenia s¹ wyliczone)
 
     X_norm = (X - ones(length(X(:,1)), 1) * X_mean) * inv(odchylenie_standardowe);      % Normalizacja danych
       

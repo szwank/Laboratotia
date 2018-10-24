@@ -17,11 +17,11 @@ end
 
 
 
-X = dane_wejsciowe_uczace;
+
 
 %% Normalizacja danych
-X_norm = normalizuj_dane(dane_wejsciowe_uczace);
-XT_norm = normalizuj_dane(dane_wejsciowe_testowe);
+[X_norm, X_mean, X_odchylenie_standardowe] = normalizuj_dane(dane_wejsciowe_uczace);
+XT_norm = normalizuj_dane(dane_wejsciowe_testowe, X_mean, X_odchylenie_standardowe);
 
 %Wykresik X
 figure(1)

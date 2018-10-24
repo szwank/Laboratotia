@@ -1,8 +1,8 @@
 clc; clear; close all;
 load dane_zad1.mat      % Za≥adowanie danych
 %% Normalizacja danych
-X_norm = normalizuj_dane(X);
-XT_norm = normalizuj_dane(XT);
+[X_norm, X_mean, X_odchylenie_standardowe] = normalizuj_dane(X);
+XT_norm = normalizuj_dane(XT, X_mean, X_odchylenie_standardowe);
 
 %Wykresik X
 figure(1)
@@ -147,25 +147,25 @@ T2_TL = diag(T2_TL);
 
 figure(4)
 subplot(2,2,1)
-plot(1:length(SPE_T), SPE_T, 'r*', length(SPE_T) + 1 :length(SPE), SPE, 'b*')
+plot(1:length(SPE_T), SPE_T, 'r*', length(SPE_T) + 1 : length(SPE_T) + length(SPE), SPE, 'b*')
 title('Wskaünik SPE- dane testowe, R = 2')
 legend('Dane testowe', 'Dane treningowe')
 grid on
 
 subplot(2,2,2)
-plot(1:length(SPE_TL), SPE_TL, 'r*', length(SPE_TL) + 1 :length(SPE_L) , SPE_L, 'b*' )
+plot(1:length(SPE_TL), SPE_TL, 'r*', length(SPE_TL) + 1 : length(SPE_TL) + length(SPE_L) , SPE_L, 'b*' )
 title('Wskaünik SPE- dane testowe, R = 1')
 legend('Dane testowe', 'Dane treningowe')
 grid on
 
 subplot(2,2,3)
-plot(1: length(T2_T), T2_T, 'r*', length(T2_T) + 1 : length(T2), T2, 'b*')
+plot(1: length(T2_T), T2_T, 'r*', length(T2_T) + 1 : length(T2_T) + length(T2), T2, 'b*')
 title('Wskaünik T2- dane testowe, R = 2')
 legend('Dane testowe', 'Dane treningowe')
 grid on
 
 subplot(2,2,4)
-plot(1: length(T2_TL), T2_TL, 'r*', length(T2_TL) + 1 : length(T2_L), T2_L, 'b*')
+plot(1: length(T2_TL), T2_TL, 'r*', length(T2_TL) + 1 : length(T2_TL) + length(T2_L), T2_L, 'b*')
 title('Wskaünik T2- dane testowe, R = 1')
 legend('Dane testowe', 'Dane treningowe')
 grid on

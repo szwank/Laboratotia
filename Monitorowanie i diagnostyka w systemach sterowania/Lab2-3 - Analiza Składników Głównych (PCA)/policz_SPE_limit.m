@@ -1,4 +1,4 @@
-function [ SPE_limit ] = policz_SPE_limit( wektor_wartosci_wlasnych )
+function [ SPE_limit ] = policz_SPE_limit( wektor_wartosci_wlasnych, procent )
 %Obliczenie SPE limit
 
 omega1 = 0;            % Policzenie sumy wartosci wlasnych
@@ -13,7 +13,7 @@ end
 % Wyznaczenie h0
 h0 = 1 - (2 * omega1 * omega3)/(3 * omega2^2);
 % Pierwszy cz³on
-W = norminv(0.95) * sqrt(2 * omega2 * h0 ^ 2)/ omega1;
+W = norminv(procent) * sqrt(2 * omega2 * h0 ^ 2)/ omega1;
 % drugi cz³on
 Z = (omega2 * h0 * (h0 -1)) / omega1^2;
 

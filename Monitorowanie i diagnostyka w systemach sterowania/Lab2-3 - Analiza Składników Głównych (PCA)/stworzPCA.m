@@ -1,10 +1,12 @@
-function [ zbior_PCA ] = stworzPCA( dane_uczace, dane_testowe )
-%Funkcja tworzy model PCA
-%   Detailed explanation goes here
+function [ X_PCA, X_PCAL_1, X_PCAL_pro ] = stworzPCA( dane_uczace, dane_testowe, procent_redukcij, procent_T2, procent_SPE )
+%Funkcja tworzy model PCA. 
+%Argumenty kolejno:
+%Dane_ucz¹ce, dane testowe, procent redukcij uk³adu, procent ufnoœci dla
+%limitu T2, procent ufnoœci dla limitu SPE
 %% Hermetyzacja funkcij, dodanie zabespieczeñ
 
 % Check number of inputs.
-if nargin > 2
+if nargin > 5
     error('StworzPCA:Za du¿o wejœæ', ...
         'Mo¿na podaæ najwy¿ej 1 opcjonalny argument');
 end
@@ -13,6 +15,16 @@ end
 switch nargin
     case 1
         dane_testowe = [1 1; 1 1];
+        procent_redukcij = 0.30;
+        procent_T2 = 0.95;
+        procent_SPE = 0.95;
+    case 2
+        procent_redukcij = 0.30;
+    case 3
+        procent_T2 = 0.95;
+        procent_SPE = 0.95;
+    case 4
+        procent_SPE = procent_T;
 end
 
 
@@ -50,7 +62,7 @@ wektor_wartosci_wlasnych = eig(R)';
 %% Przekszta³cenie do nowych wspó³¿êdnych
 [wektor_wartosci_wlasnych, macierz_wektorow_wlasnych] = posortuj_wektor_przesuwajac_elementy_w_macierzy(wektor_wartosci_wlasnych, macierz_wektorow_wlasnych);  % sortu, sortu, abra kadabra
 X_PCA = X_norm * macierz_wektorow_wlasnych;     %utworzenie danych w PCA
-zbior_PCA = X_PCA;              % przyporzadowanie martoœci dla macierzy wyjœcia
+
 %Wykresik X_norm
 subplot(2,2,3)
 plot(X_PCA(:,1), X_PCA(:,2),'*')
@@ -64,7 +76,7 @@ grid on
     Utnij_skladniki_wartosci_wlasnych_mniejsze_od_1(wektor_wartosci_wlasnych, macierz_wektorow_wlasnych);
 
 [ zredukowany_wektor_wartosci_wlasnych_pro, zredukowana_macierz_wektorow_wlasnych_pro ] =...        % zredukowanie o zadany procent
-    zredukuj_PCA_o_zadana_wartosc(wektor_wartosci_wlasnych, macierz_wektorow_wlasnych, 0.30)
+    zredukuj_PCA_o_zadana_wartosc(wektor_wartosci_wlasnych, macierz_wektorow_wlasnych, procent_redukcij);
 %% Wyznaczenie zredukowanego PCA
 X_PCAL_1 = X_norm * zredukowana_macierz_wektorow_wlasnych_1;
 X_PCAL_pro = X_norm * zredukowana_macierz_wektorow_wlasnych_pro;
@@ -123,14 +135,14 @@ T2_L_pro = diag(T2_L_pro);
 
 %% Policzenie granic SPE i T2
 
-SPE_limit = policz_SPE_limit(wektor_wartosci_wlasnych);
-T2_limit = policz_T2_limit(X_PCA);
+SPE_limit = policz_SPE_limit(wektor_wartosci_wlasnych, procent_SPE);
+T2_limit = policz_T2_limit(X_PCA, procent_T2);
 
-SPE_limit_L_1 = policz_SPE_limit(zredukowany_wektor_wartosci_wlasnych_1);
-T2_limit_L_1 = policz_T2_limit(X_PCAL_1);
+SPE_limit_L_1 = policz_SPE_limit(zredukowany_wektor_wartosci_wlasnych_1, procent_SPE);
+T2_limit_L_1 = policz_T2_limit(X_PCAL_1, procent_T2);
 
-SPE_limit_L_pro = policz_SPE_limit(zredukowany_wektor_wartosci_wlasnych_pro);
-T2_limit_L_pro = policz_T2_limit(X_PCAL_pro);
+SPE_limit_L_pro = policz_SPE_limit(zredukowany_wektor_wartosci_wlasnych_pro, procent_SPE);
+T2_limit_L_pro = policz_T2_limit(X_PCAL_pro, procent_T2);
 %% wykresiki SPE I T2
 figure(2)
 

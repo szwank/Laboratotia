@@ -62,7 +62,7 @@ static void mdlInitializeSizes(SimStruct *S)
     }
 
     ssSetNumContStates(S, 0);
-    ssSetNumDiscStates(S, 0);
+    ssSetNumDiscStates(S, 4); // xHat
 
     if (!ssSetNumInputPorts(S, 1)) return;
     ssSetInputPortWidth(S, 0, 1);
@@ -82,10 +82,15 @@ static void mdlInitializeSizes(SimStruct *S)
     ssSetNumIWork(S, 0);
     ssSetNumPWork(S, 0);
     ssSetNumModes(S, 0);
-	ssSetNumDWork(S, 1);
-	ssSetDWorkWidth(S, 0, 1);
     ssSetNumNonsampledZCs(S, 0);
 
+    ssSetNumDWork(S, 4);   
+	ssSetDWorkWidth(S, 0, 1); //P1
+    ssSetDWorkWidth(S, 1, 1); //P2
+    ssSetDWorkWidth(S, 2, 1); //P3
+    ssSetDWorkWidth(S, 3, 1); //P4
+    
+    
     /* Specify the sim state compliance to be same as a built-in block */
     ssSetSimStateCompliance(S, USE_DEFAULT_SIM_STATE);
 
@@ -123,7 +128,15 @@ static void mdlInitializeSampleTimes(SimStruct *S)
    *    restarts execution to reset the states.
    */
   static void mdlInitializeConditions(SimStruct *S)
-  {
+  {       
+      const mxArray *x0_mx = ssGetSFcnParam(S, 0);
+      real_T *x0 = mxGetPr(x0_mx);      // Pobranie parametru z s-funkcij
+      real_T *xHat = ssGetDiscStates(S);
+      
+      for(int_T i = 0; i < ssGetNumDiscStates(S); i++)      // zainicjowanie parametrów
+      {
+          xHat[i] = x0[i];    
+      }
   }
 #endif /* MDL_INITIALIZE_CONDITIONS */
 
@@ -139,25 +152,76 @@ static void mdlInitializeSampleTimes(SimStruct *S)
    */
   static void mdlStart(SimStruct *S)
   {
-	  real_T* szwank = ssGetDWork(S, 0);
-	  *szwank = 1;
+	  /* Initializacja macierzy P */
+      const mxArray *x0_mx = ssGetSFcnParam(S, 0);
+      real_T *x0 = mxGetPr(x0_mx);      // Pobranie parametru z s-funkcij
+      
+      real_T P0[4][4];
+      
+      for(real_T i = 0; i < ssGetNumDiscStates(S); i++)
+      {
+       
+          
+          
+          
+      }
+      
+      P0 = block.DialogPrm(1).Data * block.DialogPrm(1).Data';   % P0
+      block.Dwork(2).Data = P0(1,:);
+      block.Dwork(3).Data = P0(2,:);
+      block.Dwork(4).Data = P0(3,:);
+      block.Dwork(5).Data = P0(4,:);
   }
 #endif /*  MDL_START */
 
-/* Function: mdlOutputs =======================================================
+/* Function: mdlOutputs   ========================================
  * Abstract:
  *    In this function, you compute the outputs of your S-function
  *    block.
  */
 static void mdlOutputs(SimStruct *S, int_T tid)
 {
+    /*====================================================================================================================================
+                                                            Zdefiniowanie macierzy
+    =====================================================================================================================================*/
+    
+    static real_T Ad[4][4]={ { 1, 0, 0.0001, 0     } , // zdefiniowanie macierzy systemu dyskretnego po linearyzacij
+                             { 0, 1, 0     , 0.0001} , // operator static- powoduje dodanie zmiennej do pamiêci globalnej
+                             { 0, 0, 1     , 0     } ,
+                             { 0, 0, 0     , 1     }
+                           };
+    static real_T Bd[4][2]={ { 0     , 0     } , // zdefiniowanie macierzy systemu dyskretnego po linearyzacij
+                             { 0     , 0     } , // operator static- powoduje dodanie zmiennej do pamiêci globalnej
+                             { 0.0001, 0     } ,
+                             { 0     , 0.0001}
+                           };
+    static real_T Cd[2][4]={ { 1, 0, 0, 0} , // zdefiniowanie macierzy systemu dyskretnego po linearyzacij
+                             { 0, 1, 0, 0}  // operator static- powoduje dodanie zmiennej do pamiêci globalnej                           
+                           };                      
+    
+    static real_T G[4][2] = { { 0     , 0     } , // zdefiniowanie macierzy systemu dyskretnego po linearyzacij
+                              { 0     , 0     } , // operator static- powoduje dodanie zmiennej do pamiêci globalnej
+                              { 0.0001, 0     } ,
+                              { 0     , 0.0001}
+                            };
+    
+    static real_T Z[2][2]={ { 1     , 0     } , 
+                            { 0     , 1     }  // operator static- powoduje dodanie zmiennej do pamiêci globalnej                             
+                           };
+    static real_T V[2][2]={ { 1     , 0     } , 
+                            { 0     , 1     }  // operator static- powoduje dodanie zmiennej do pamiêci globalnej                             
+                           };
+    /*=====================================================================================================================================
+                                                                Obliczenia
+    ======================================================================================================================================*/                       
+   
     const real_T *u = (const real_T*) ssGetInputPortSignal(S,0);
     real_T       *y = ssGetOutputPortSignal(S,0);
     
 	//ssPrintf("Szwank to noob %f\n", *realPtr);
 	const mxArray *vektor = ssGetSFcnParam(S, 0);
-   
-    y[0] = *mxGetPr(vektor);
+    real_T *tablica = mxGetPr(vektor);
+    y[0] = tablica[0];
 }
 
 

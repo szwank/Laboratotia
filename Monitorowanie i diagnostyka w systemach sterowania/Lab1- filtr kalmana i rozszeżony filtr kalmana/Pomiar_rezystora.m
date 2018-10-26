@@ -55,7 +55,7 @@ for k = 1:length(t)
       % OBLICZENIE ESTYMATY STANU x(k+1/k+1)
         xe=x1+KA*(z-z1);
       % OBLICZENIE MACIERZY WARIANCJI ESTYMATY P(k+1/k+1)
-        P=(1-KA*C)*P1;
+        P=(1-KA*C)*P1*(1-KA*C)' + KA*V*KA';
       
       % - ARCHIWIZACJA DANYCH
       % HISTORIA ESTYMACJI

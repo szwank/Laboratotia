@@ -4,14 +4,14 @@
  
 clc; clear all; close all;
 
-rng('default'); rng(8787);          % parametry generatora liczb losowych
+rng('default'); rng(777);rng('shuffle')          % parametry generatora liczb losowych
 %rng('shuffle');
 
 % INICJALIZACJA PARAMETRÓW
 
 a=1;                                % przyspieszenie pojazdu [m/s^2]
 Ts=50;                             % krok symulacji [s]
-t=0:Ts:10000;                          % czas symulacji [s] 
+t=0:Ts:1000;                          % czas symulacji [s] 
  
 m=3;								% rz¹d modelu procesu
 dq=1; 								% odchylenie standardowe szumu procesu
@@ -68,7 +68,7 @@ for k = 1:length(t)
       % OBLICZENIE ESTYMATY STANU x(k+1/k+1)
         xe=x1+KA*(z-z1);
       % OBLICZENIE MACIERZY WARIANCJI ESTYMATY P(k+1/k+1)
-        P=(I-KA*C)*P1;
+        P=(I-KA*C)*P1*(I-KA*C)' + KA*R*KA';
         
           % - ARCHIWIZACJA DANYCH
       % HISTORIA ESTYMACJI

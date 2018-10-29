@@ -10,7 +10,7 @@
  * (i.e. replace sfuntmpl_basic with the name of your S-function).
  */
 
-#define S_FUNCTION_NAME  filtr_kalmanaaa
+#define S_FUNCTION_NAME  filtr_kalmana
 #define S_FUNCTION_LEVEL 2
 
 /*
@@ -18,28 +18,8 @@
  * its associated macro definitions.
  */
 #include "simstruc.h"
-real_T *mxArrayToArray(const mxArray *sPtr)
-{
-    mwSize nElements;       /* number of elements in array */
-    mwIndex eIdx;           /* element index */
-    const mxArray *fPtr;    /* field pointer */
-    const char *field;
-    real_T *array;           /* value to calculate */
-   
-    nElements = (mwSize)mxGetNumberOfElements(sPtr);
-    for (eIdx = 0; eIdx < nElements; eIdx++) {
-        fPtr = mxGetField(sPtr, eIdx, field);
-        if ((fPtr != NULL) 
-            && (mxGetClassID(fPtr) == mxDOUBLE_CLASS) 
-            && (!mxIsComplex(fPtr))) 
-        {
-            array[eIdx] = *mxGetPr(fPtr);
-            
-        }
-    }
-    return array;
-}
-    
+#include "matrix.h"
+
 
 /* Error handling
  * --------------
@@ -82,7 +62,7 @@ static void mdlInitializeSizes(SimStruct *S)
     }
 
     ssSetNumContStates(S, 0);
-    ssSetNumDiscStates(S, 0);
+    ssSetNumDiscStates(S, 4); // xHat
 
     if (!ssSetNumInputPorts(S, 1)) return;
     ssSetInputPortWidth(S, 0, 1);
@@ -99,13 +79,18 @@ static void mdlInitializeSizes(SimStruct *S)
 
     ssSetNumSampleTimes(S, 1);
     ssSetNumRWork(S, 0);
-	ssSetNumDWork(S, 1);            //zainicjowanie zmiennej DWork
-    ssSetDWorkWidth(S, 0, 4);        // x[4]
     ssSetNumIWork(S, 0);
     ssSetNumPWork(S, 0);
     ssSetNumModes(S, 0);
     ssSetNumNonsampledZCs(S, 0);
 
+    ssSetNumDWork(S, 4);   
+	ssSetDWorkWidth(S, 0, 1); //P1
+    ssSetDWorkWidth(S, 1, 1); //P2
+    ssSetDWorkWidth(S, 2, 1); //P3
+    ssSetDWorkWidth(S, 3, 1); //P4
+    
+    
     /* Specify the sim state compliance to be same as a built-in block */
     ssSetSimStateCompliance(S, USE_DEFAULT_SIM_STATE);
 
@@ -129,7 +114,7 @@ static void mdlInitializeSampleTimes(SimStruct *S)
 
 
 
-#undef MDL_INITIALIZE_CONDITIONS   /* Change to #undef to remove function */
+#define MDL_INITIALIZE_CONDITIONS   /* Change to #undef to remove function */
 #if defined(MDL_INITIALIZE_CONDITIONS)
   /* Function: mdlInitializeConditions ========================================
    * Abstract:
@@ -143,15 +128,16 @@ static void mdlInitializeSampleTimes(SimStruct *S)
    *    restarts execution to reset the states.
    */
   static void mdlInitializeConditions(SimStruct *S)
-{
-    real_T *x0 = ssGetContStates(S);
-    const real_T *u = (const real_T*) ssGetInputPortSignal(S,0);
-    int_T lp;
-
-    for (lp=0;lp<1;lp++) {
-        *x0++=*u;
-    }
-}
+  {       
+      const mxArray *x0_mx = ssGetSFcnParam(S, 0);
+      real_T *x0 = mxGetPr(x0_mx);      // Pobranie parametru z s-funkcij
+      real_T *xHat = ssGetDiscStates(S);
+      
+      for(int_T i = 0; i < ssGetNumDiscStates(S); i++)      // zainicjowanie parametrów
+      {
+          xHat[i] = x0[i];    
+      }
+  }
 #endif /* MDL_INITIALIZE_CONDITIONS */
 
 
@@ -166,27 +152,38 @@ static void mdlInitializeSampleTimes(SimStruct *S)
    */
   static void mdlStart(SimStruct *S)
   {
-      const mxArray *parameter = ssGetSFcnParam(S, 0);
-      real_T *x0 = mxArrayToArray(parameter);
-      real_T *x = ssGetDWork(S,0);
+	  /* Initializacja macierzy P */
+      const mxArray *x0_mx = ssGetSFcnParam(S, 0);
+      real_T *x0 = mxGetPr(x0_mx);      // Pobranie parametru z s-funkcij
       
-      for(int_T i = 0; i < 4; i++)
+      real_T P0[4][4];
+      
+      for(real_T i = 0; i < ssGetNumDiscStates(S); i++)
       {
-          x[i] = x0[i];
+       
+          
+          
+          
       }
-      free(x0);          
+      
+      P0 = block.DialogPrm(1).Data * block.DialogPrm(1).Data';   % P0
+      block.Dwork(2).Data = P0(1,:);
+      block.Dwork(3).Data = P0(2,:);
+      block.Dwork(4).Data = P0(3,:);
+      block.Dwork(5).Data = P0(4,:);
   }
 #endif /*  MDL_START */
 
-
-
-/* Function: mdlOutputs =======================================================
+/* Function: mdlOutputs   ========================================
  * Abstract:
  *    In this function, you compute the outputs of your S-function
  *    block.
  */
 static void mdlOutputs(SimStruct *S, int_T tid)
 {
+    /*====================================================================================================================================
+                                                            Zdefiniowanie macierzy
+    =====================================================================================================================================*/
     
     static real_T Ad[4][4]={ { 1, 0, 0.0001, 0     } , // zdefiniowanie macierzy systemu dyskretnego po linearyzacij
                              { 0, 1, 0     , 0.0001} , // operator static- powoduje dodanie zmiennej do pamiêci globalnej
@@ -213,13 +210,18 @@ static void mdlOutputs(SimStruct *S, int_T tid)
                            };
     static real_T V[2][2]={ { 1     , 0     } , 
                             { 0     , 1     }  // operator static- powoduje dodanie zmiennej do pamiêci globalnej                             
-                           };                           
-    
+                           };
+    /*=====================================================================================================================================
+                                                                Obliczenia
+    ======================================================================================================================================*/                       
+   
     const real_T *u = (const real_T*) ssGetInputPortSignal(S,0);
-    real_T *x = ssGetDWork(S, 0);
-    //real_T *x = ssGetContStates(S);
     real_T       *y = ssGetOutputPortSignal(S,0);
-    y[0] = x[0];
+    
+	//ssPrintf("Szwank to noob %f\n", *realPtr);
+	const mxArray *vektor = ssGetSFcnParam(S, 0);
+    real_T *tablica = mxGetPr(vektor);
+    y[0] = tablica[0];
 }
 
 
@@ -240,7 +242,7 @@ static void mdlOutputs(SimStruct *S, int_T tid)
 
 
 
-#undef MDL_DERIVATIVES  /* Change to #undef to remove function */
+#define MDL_DERIVATIVES  /* Change to #undef to remove function */
 #if defined(MDL_DERIVATIVES)
   /* Function: mdlDerivatives =================================================
    * Abstract:
@@ -248,14 +250,8 @@ static void mdlOutputs(SimStruct *S, int_T tid)
    *    The derivatives are placed in the derivative vector, ssGetdX(S).
    */
   static void mdlDerivatives(SimStruct *S)
-{
-    real_T            *dx    = ssGetdX(S);
-    real_T            *x     = ssGetContStates(S);
-    //InputRealPtrsType U  = ssGetInputPortRealSignalPtrs(S,0); // Get pointers to signals of type double connected to an input port
-    const real_T *u = (const real_T*) ssGetInputPortSignal(S,0);
-    /* xdot = Ax + Bu */
-    dx[0] = x[0];
-}
+  {
+  }
 #endif /* MDL_DERIVATIVES */
 
 

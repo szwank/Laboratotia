@@ -24,7 +24,7 @@ switch nargin
         procent_T2 = 0.95;
         procent_SPE = 0.95;
     case 4
-        procent_SPE = procent_T2;
+        procent_SPE = procent_T;
 end
 
 
@@ -39,7 +39,8 @@ XT_norm = normalizuj_dane(XT, X_mean, X_odchylenie_standardowe);
 figure(1)
 subplot(2,2,1)
 plot(X(:,1), X(:,2),'*')
-
+xlim([-2, 12])
+ylim([-5, 12])
 title('X');
 grid on
 
@@ -50,7 +51,8 @@ R = X_norm' * X_norm/(length(X(:,1)) - 1);     % Wyznaczenie macierzy korelacij
 subplot(2,2,2)
 plot(X_norm(:,1), X_norm(:,2),'*')
 title('X znormalizowane');
-
+xlim([-2, 12])
+ylim([-5, 12])
 grid on
 
 [macierz_wektorow_wlasnych, D] = eig(R);
@@ -64,7 +66,8 @@ X_PCA = X_norm * macierz_wektorow_wlasnych;     %utworzenie danych w PCA
 %Wykresik X_norm
 subplot(2,2,3)
 plot(X_PCA(:,1), X_PCA(:,2),'*')
-
+xlim([-2, 12])
+ylim([-5, 12])
 title('X PCA');
 grid on
 
@@ -91,7 +94,7 @@ SPE = [];
 for i = 1:length(X(:,1))
     
    a = X_norm(i,:) * (macierz_wektorow_wlasnych - macierz_wektorow_wlasnych);
-   SPE(i) = norm(a,2)^2;
+   SPE(i) = (a * a') ^ 2;
 end
 
 %% Wyznaczenie T2 dla X PCA
@@ -107,7 +110,7 @@ for i = 1:length(X(:,1))
    a = X_norm(i,:) * (macierz_wektorow_wlasnych - [zredukowana_macierz_wektorow_wlasnych_1, ...
        zeros(length(macierz_wektorow_wlasnych(:,1)), ...
        length(macierz_wektorow_wlasnych(1,:)) - length(zredukowana_macierz_wektorow_wlasnych_1(1,:)))]);
-   SPE_L_1(i) = norm(a,2)^2;
+   SPE_L_1(i) = (a * a') ^ 2;
 end
 
 %% Wyznaczenie T2 dla X PCAL_1
@@ -122,7 +125,7 @@ for i = 1:length(X(:,1))
    a = X_norm(i,:) * (macierz_wektorow_wlasnych - [zredukowana_macierz_wektorow_wlasnych_pro, ...
        zeros(length(macierz_wektorow_wlasnych(:,1)), ...
        length(macierz_wektorow_wlasnych(1,:)) - length(zredukowana_macierz_wektorow_wlasnych_pro(1,:)))]);
-   SPE_L_pro(i) = norm(a,2)^2;
+   SPE_L_pro(i) = (a * a') ^ 2;
 end
 
 %% Wyznaczenie T2 dla X PCAL_pro
@@ -193,9 +196,9 @@ XL_zrekunstruowany_pro = X_PCAL_pro * zredukowana_macierz_wektorow_wlasnych_pro'
 % wykresik X_zrekonstruowany i XL_zrekunstruowany
 figure(3)
 plot(X_zrekonstruowany(:,1), X_zrekonstruowany(:,2), 'r*',XL_zrekunstruowany_1(:,1),XL_zrekunstruowany_1(:,2),'b*',...
-      XL_zrekunstruowany_1(:,1), XL_zrekunstruowany_1(:,2),'k*')
+     XL_zrekunstruowany_1(:,1), XL_zrekunstruowany_1(:,2),'k*')
 hold on
-plot(X_norm(:,1),X_norm(:,2), 'g*')
+plot(X_norm(1),X_norm(2), 'g*')
 title('Zrekonstruowane dane')
 legend('Zrekonstruowane dane', 'Zrekonstruowane dane dla zredukowanego PCA- 1', 'Zrekonstruowane dane dla zredukowanego PCA- pro',...
        'Znormalizowane dane')
@@ -208,17 +211,17 @@ SPE_T = [];
 for i = 1:length(XT_norm(:,1))
     
    a = XT_norm(i,:) * (macierz_wektorow_wlasnych - macierz_wektorow_wlasnych);
-   SPE_T(i) = norm(a,2)^2;
+   SPE_T(i) = (a * a') ^ 2;
 end
 
 % SPE reduced
 SPE_TL = [];
 for i = 1:length(XT_norm(:,1))
     
-   a = XT_norm(i,:) * (macierz_wektorow_wlasnych - [zredukowana_macierz_wektorow_wlasnych_pro, ...
+   a = XT_norm(i,:) * (macierz_wektorow_wlasnych - [zredukowana_macierz_wektorow_wlasnych_1, ...
        zeros(length(macierz_wektorow_wlasnych(:,1)), ...
-       length(macierz_wektorow_wlasnych(1,:)) - length(zredukowana_macierz_wektorow_wlasnych_pro(1,:)))]);
-   SPE_TL(i) = norm(a,2)^2;
+       length(macierz_wektorow_wlasnych(1,:)) - length(zredukowana_macierz_wektorow_wlasnych_1(1,:)))]);
+   SPE_TL(i) = (a * a') ^ 2;
 end
 
 % T2
@@ -226,7 +229,7 @@ T2_T = XT_norm * macierz_wektorow_wlasnych * inv(diag(wektor_wartosci_wlasnych))
 T2_T = diag(T2_T);
 
 % T2 reduced
-T2_TL = XT_norm * zredukowana_macierz_wektorow_wlasnych_pro * inv(diag(zredukowany_wektor_wartosci_wlasnych_pro)) * zredukowana_macierz_wektorow_wlasnych_pro' * XT_norm';
+T2_TL = XT_norm * zredukowana_macierz_wektorow_wlasnych_1 * inv(diag(zredukowany_wektor_wartosci_wlasnych_1)) * zredukowana_macierz_wektorow_wlasnych_1' * XT_norm';
 T2_TL = diag(T2_TL);
 
 
@@ -235,31 +238,27 @@ T2_TL = diag(T2_TL);
 
 figure(4)
 subplot(2,2,1)
-plot(length(SPE) + 1:length(SPE_T) + length(SPE), SPE_T, 'r*', 1 : length(SPE) , SPE, 'b*')
+plot(1:length(SPE_T), SPE_T, 'r*', length(SPE_T) + 1 : length(SPE_T) + length(SPE), SPE, 'b*')
 rysuj_granice(SPE_limit, 1:(length(SPE_T) + length(SPE)));
-title('Wskaünik SPE- dane testowe, nie zredukowany')
-legend('SPE- dane testowe','SPE- dane uczπce')
+title('Wskaünik SPE- dane testowe, R = 2')
 grid on
 
 subplot(2,2,2)
-plot(length(SPE_L_1) + 1:length(SPE_TL) + length(SPE_L_1), SPE_TL, 'r*', 1 : length(SPE_L_1) , SPE_L_1, 'b*' )
-rysuj_granice(SPE_limit_L_pro, 1:(length(SPE_TL) + length(SPE_L_pro)));
-title('Wskaünik SPE- dane testowe, zredukowany')
-legend('SPE- dane testowe','SPE- dane uczπce')
+plot(1:length(SPE_TL), SPE_TL, 'r*', length(SPE_TL) + 1 : length(SPE_TL) + length(SPE_L_1) , SPE_L_1, 'b*' )
+rysuj_granice(SPE_limit_L_1, 1:(length(SPE_TL) + length(SPE_L_1)));
+title('Wskaünik SPE- dane testowe, R = 1')
 grid on
 
 subplot(2,2,3)
-plot(length(T2) + 1: length(T2_T) + length(T2), T2_T, 'r*', 1 : length(T2), T2, 'b*')
+plot(1: length(T2_T), T2_T, 'r*', length(T2_T) + 1 : length(T2_T) + length(T2), T2, 'b*')
 rysuj_granice(T2_limit, 1:(length(T2_T) + length(T2)));
-title('Wskaünik T2- dane testowe, nie zredukowany')
-legend('T2- dane testowe','T2- dane uczπce')
+title('Wskaünik T2- dane testowe, R = 2')
 grid on
 
 subplot(2,2,4)
-plot(length(T2_L_1) + 1: length(T2_TL) + length(T2_L_1), T2_TL, 'r*', 1 : length(T2_L_1), T2_L_1, 'b*')
-rysuj_granice(T2_limit_L_pro, 1:(length(T2_TL) + length(T2_L_pro)));
-title('Wskaünik T2- dane testowe, zredukowany')
-legend('T2- dane testowe','T2- dane uczπce')
+plot(1: length(T2_TL), T2_TL, 'r*', length(T2_TL) + 1 : length(T2_TL) + length(T2_L_1), T2_L_1, 'b*')
+rysuj_granice(T2_limit_L_1, 1:(length(T2_TL) + length(T2_L_1)));
+title('Wskaünik T2- dane testowe, R = 1')
 grid on
 
 

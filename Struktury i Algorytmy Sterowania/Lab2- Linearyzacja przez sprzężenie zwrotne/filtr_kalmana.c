@@ -19,7 +19,7 @@
  */
 #include "simstruc.h"
 #include "matrix.h"
-
+#include "Matrix_calculations.h"
 
 /* Error handling
  * --------------
@@ -73,10 +73,14 @@ static void mdlInitializeSizes(SimStruct *S)
      * the mdlOutputs or mdlGetTimeOfNextVarHit functions.
      */
     ssSetInputPortDirectFeedThrough(S, 0, 1);
-
-    if (!ssSetNumOutputPorts(S, 1)) return;
+    //ssSetInputPortDirectFeedThrough(S, 1, 1);
+    //ssSetInputPortDirectFeedThrough(S, 2, 1);
+    //ssSetInputPortDirectFeedThrough(S, 3, 1);
+    if (!ssSetNumOutputPorts(S, 4)) return;
     ssSetOutputPortWidth(S, 0, 1);
-
+    ssSetOutputPortWidth(S, 1, 1);
+    ssSetOutputPortWidth(S, 2, 1);
+    ssSetOutputPortWidth(S, 3, 1);
     ssSetNumSampleTimes(S, 1);
     ssSetNumRWork(S, 0);
     ssSetNumIWork(S, 0);
@@ -161,16 +165,16 @@ static void mdlInitializeSampleTimes(SimStruct *S)
       for(real_T i = 0; i < ssGetNumDiscStates(S); i++)
       {
        
-          
+          // wymno¿enie macierzy x0 * x0' i przypisanie od P0
           
           
       }
       
-      P0 = block.DialogPrm(1).Data * block.DialogPrm(1).Data';   % P0
+   /*   P0 = block.DialogPrm(1).Data * block.DialogPrm(1).Data';   % P0
       block.Dwork(2).Data = P0(1,:);
       block.Dwork(3).Data = P0(2,:);
       block.Dwork(4).Data = P0(3,:);
-      block.Dwork(5).Data = P0(4,:);
+      block.Dwork(5).Data = P0(4,:);  */
   }
 #endif /*  MDL_START */
 
@@ -221,7 +225,12 @@ static void mdlOutputs(SimStruct *S, int_T tid)
 	//ssPrintf("Szwank to noob %f\n", *realPtr);
 	const mxArray *vektor = ssGetSFcnParam(S, 0);
     real_T *tablica = mxGetPr(vektor);
-    y[0] = tablica[0];
+    const int *dimension = mxGetDimensions(vektor);
+    struct Matrix macierz = createEmptyMatrix(3,3);
+    y[0] = 0;
+    y[1] = tablica[1];
+    y[2] = tablica[2];
+    y[3] = tablica[3];
 }
 
 

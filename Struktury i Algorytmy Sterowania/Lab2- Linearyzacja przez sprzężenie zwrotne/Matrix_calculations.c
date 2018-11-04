@@ -1,4 +1,4 @@
-﻿#include "Matrix_calculations.h"
+#include "Matrix_calculations.h"
 #include "stdio.h"
 #include "stdlib.h"
 
@@ -163,23 +163,3 @@ struct Matrix create_diag_matrix(int size)
     return result;
 }
 
-struct Matrix createMatrix(real_T *array, int height, int width)
-{
-    struct Matrix matrix = createEmptyMatrix(height, width);
-    matrix.height = height;
-    matrix.width = width;
-    
-    double** table = (double**)malloc(height*sizeof(double*));
-    
-    for(int i = 0; i < height; i ++)
-    {
-        double *line = (double*)malloc(width*sizeof(double));
-        
-        for (int j = 0; j < width; j++)
-            line[j] = array[j + height*(i-1)];
-
-        table[i] = line;
-    }
-    matrix.data = table;
-    return matrix;
-}

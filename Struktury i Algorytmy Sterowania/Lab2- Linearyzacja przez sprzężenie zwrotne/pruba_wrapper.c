@@ -14,8 +14,8 @@
 
 
 /* %%%-SFUNWIZ_wrapper_includes_Changes_BEGIN --- EDIT HERE TO _END */
-#include <math.h>
-#include "matrix.h"
+
+#include "Matrix_calculations.h"
 /* %%%-SFUNWIZ_wrapper_includes_Changes_END --- EDIT HERE TO _BEGIN */
 #define u_width 1
 #define y_width 1
@@ -24,7 +24,31 @@
  *
  */
 /* %%%-SFUNWIZ_wrapper_externs_Changes_BEGIN --- EDIT HERE TO _END */
-/* extern double func(double a); */
+struct Matrix createEmptyMatrix(int width, int height);
+
+double** createEmptyTable(int, int);
+double* createEmptyTable2(int);
+
+void freeMatrix(struct Matrix matrix);
+
+void freeTable(double** table, int height);
+
+void printMatrix(struct Matrix matrix);
+
+struct Matrix add_Matrixes(struct Matrix matrix_a, struct Matrix matrix_b );
+
+struct Matrix substract_Matrixes(struct Matrix matrix_a, struct Matrix matrix_b );
+
+void assertSameSize(struct Matrix matrix_a, struct Matrix matrix_b);
+
+struct Matrix multiply_Matrixes(struct Matrix matrix_a, struct Matrix matrix_b);
+
+void assertSquare(struct Matrix matrix);
+
+struct Matrix get_Transposed_Matrix(struct Matrix matrix);
+
+struct Matrix create_diag_matrix(int size);
+
 /* %%%-SFUNWIZ_wrapper_externs_Changes_END --- EDIT HERE TO _BEGIN */
 
 /*

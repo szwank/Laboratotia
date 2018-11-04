@@ -1,5 +1,5 @@
-﻿#ifndef MATRIX
-#define MATRIX
+#ifndef MATRIXX_H
+#define MATRIXX_H
         
 
 
@@ -35,7 +35,6 @@ struct Matrix get_Transposed_Matrix(struct Matrix matrix);
 
 struct Matrix create_diag_matrix(int size);
 
-struct Matrix createMatrix(real_T *array, int height, int width);
 
 
 

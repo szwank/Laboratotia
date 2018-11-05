@@ -58,9 +58,11 @@ struct Matrix createMatrix(real_T **matrixData, int height, int width);
 
 struct Matrix createMatrixFromArray(real_T *vector, const int *dimension);
 
+struct Matrix createMatrixFromArrayC(const real_T *vector, const int *dimension);
+
 struct Matrix dWorkToMatrix(real_T **dWork, int height, int width);
 
-void freePWorkMemory();
+void freePWorkMemory(SimStruct *S, int amount);
 
 void freeMatrixData(real_T **matrixData, int height, int width);
 
@@ -122,6 +124,7 @@ static void mdlInitializeSizes(SimStruct *S)
      * the mdlOutputs or mdlGetTimeOfNextVarHit functions.
      */
     ssSetInputPortDirectFeedThrough(S, 0, 1);
+    ssSetInputPortDirectFeedThrough(S, 1, 1);
     //ssSetInputPortDirectFeedThrough(S, 1, 1);
     //ssSetInputPortDirectFeedThrough(S, 2, 1);
     //ssSetInputPortDirectFeedThrough(S, 3, 1);
@@ -131,16 +134,16 @@ static void mdlInitializeSizes(SimStruct *S)
     ssSetNumRWork(S, 0);
     ssSetNumIWork(S, 0);
     
-    ssSetNumPWork(S, 5);    //Ad, Bd, Cd, Z, V
+    ssSetNumPWork(S, 6);    //Ad, Bd, Cd, Z, V, P
     
     ssSetNumModes(S, 0);
     ssSetNumNonsampledZCs(S, 0);
 
-    ssSetNumDWork(S, 4);   
-	ssSetDWorkWidth(S, 0, 1); //P1
-    ssSetDWorkWidth(S, 1, 1); //P2
-    ssSetDWorkWidth(S, 2, 1); //P3
-    ssSetDWorkWidth(S, 3, 1); //P4
+    ssSetNumDWork(S, 0);   
+	//ssSetDWorkWidth(S, 0, 1); //P1
+    //ssSetDWorkWidth(S, 1, 1); //P2
+    //ssSetDWorkWidth(S, 2, 1); //P3
+    //ssSetDWorkWidth(S, 3, 1); //P4
     
     
     /* Specify the sim state compliance to be same as a built-in block */
@@ -205,78 +208,52 @@ static void mdlInitializeSampleTimes(SimStruct *S)
   static void mdlStart(SimStruct *S)
   {
       /* inicjalizacja macierzy stanu */
-      real_T ***dWork = (real_T***)ssGetPWork(S);
-    real_T **Ad = (real_T**)malloc(4*sizeof(real_T*));
-    for(int i = 0; i < 4; i++)
-    {
-        Ad[i] = (real_T*)malloc(4 * sizeof(real_T));
-    }
-    Ad[0][0]=1; Ad[0][1]=0; Ad[0][2]=0.0001; Ad[0][3]=0;
-    Ad[1][0]=0; Ad[1][1]=1; Ad[1][2]=0; Ad[1][3]=0.0001;
-    Ad[2][0]=0; Ad[2][1]=0; Ad[2][2]=1; Ad[2][3]=0;
-    Ad[3][0]=0; Ad[3][1]=0; Ad[3][2]=0; Ad[3][3]=1;
-    dWork[0] = Ad;
+    //struct Matrix **dWork = (struct Matrix**)ssGetPWork(S);
     
-    real_T **Bd = (real_T**)malloc(4*sizeof(real_T*));
-    for(int i = 0; i < 4; i++)
-    {
-        Bd[i] = (real_T*)malloc(2 * sizeof(real_T));
-    }
-    Bd[0][0]=0; Bd[0][1]=0; 
-    Bd[1][0]=0; Bd[1][1]=0; 
-    Bd[2][0]=0.0001; Bd[2][1]=0; 
-    Bd[3][0]=0; Bd[3][1]=0.0001; 
-    dWork[1] = Bd;
-    
-    real_T **Cd = (real_T**)malloc(2*sizeof(real_T*));
-    for(int i = 0; i < 2; i++)
-    {
-        Cd[i] = (real_T*)malloc(4 * sizeof(real_T));
-    }
-    Cd[0][0]=1; Cd[0][1]=0; Cd[0][2]=0; Cd[0][3]=0;
-    Cd[1][0]=0; Cd[1][1]=1; Cd[1][2]=0; Cd[1][3]=0;
-    dWork[2] = Cd;
-    
-    real_T **Z = (real_T**)malloc(2*sizeof(real_T*));
-    for(int i = 0; i < 2; i++)
-    {
-        Z[i] = (real_T*)malloc(2 * sizeof(real_T));
-    }
-    Z[0][0]=1; Z[0][1]=0; 
-    Z[1][0]=0; Z[1][1]=1; 
-    dWork[3] = Z;
-    
-    real_T **V = (real_T**)malloc(2*sizeof(real_T*));
-    for(int i = 0; i < 2; i++)
-    {
-        V[i] = (real_T*)malloc(2 * sizeof(real_T));
-    }
-    V[0][0]=1; V[0][1]=0; 
-    V[1][0]=0; V[1][1]=1; 
-    dWork[4] = V;
-    
+    struct Matrix Ad = createEmptyMatrix(4, 4);
+    Ad.data[0][0]=1; Ad.data[0][1]=0; Ad.data[0][2]=0.0001; Ad.data[0][3]=0;
+    Ad.data[1][0]=0; Ad.data[1][1]=1; Ad.data[1][2]=0;      Ad.data[1][3]=0.0001;
+    Ad.data[2][0]=0; Ad.data[2][1]=0; Ad.data[2][2]=1;      Ad.data[2][3]=0;
+    Ad.data[3][0]=0; Ad.data[3][1]=0; Ad.data[3][2]=0;      Ad.data[3][3]=1;
+    //dWork[0] = &Ad;
+    ssSetPWorkValue(S,0,&Ad);
+    struct Matrix Bd = createEmptyMatrix(4, 2);
+    Bd.data[0][0]=0;      Bd.data[0][1]=0; 
+    Bd.data[1][0]=0;      Bd.data[1][1]=0; 
+    Bd.data[2][0]=0.0001; Bd.data[2][1]=0; 
+    Bd.data[3][0]=0;      Bd.data[3][1]=0.0001; 
+    //dWork[1] = &Bd;
+    ssSetPWorkValue(S,1,&Bd);
+    struct Matrix Cd = createEmptyMatrix(2, 4);
+    Cd.data[0][0]=1; Cd.data[0][1]=0; Cd.data[0][2]=0; Cd.data[0][3]=0;
+    Cd.data[1][0]=0; Cd.data[1][1]=1; Cd.data[1][2]=0; Cd.data[1][3]=0;
+    //dWork[2] = &Cd;
+    ssSetPWorkValue(S,2,&Cd);
+    struct Matrix Z = createEmptyMatrix(2, 2);
+    Z.data[0][0]=1; Z.data[0][1]=0; 
+    Z.data[1][0]=0; Z.data[1][1]=1; 
+    //dWork[3] = &Z;
+    ssSetPWorkValue(S,3,&Z);
+    struct Matrix V = createEmptyMatrix(2, 2);
+    V.data[0][0]=1; V.data[0][1]=0; 
+    V.data[1][0]=0; V.data[1][1]=1; 
+    //dWork[4] = &V;
+    ssSetPWorkValue(S,4,&V);
 	  /* Initializacja macierzy P */
       const mxArray *x0_mx = ssGetSFcnParam(S, 0);
       real_T *x0 = mxGetPr(x0_mx);      // Pobranie parametru z s-funkcij
       const int *dimension_x0 = mxGetDimensions(x0_mx);
       struct Matrix matrix_x0 = createMatrixFromArray(x0, dimension_x0);
       struct Matrix matrix_x0T = get_Transposed_Matrix(matrix_x0);
-      
+      real_T *a = malloc(3*sizeof(real_T));
+      a[0]=1; a[1]=2; a[2]=3;
       struct Matrix P0 = multiply_Matrixes(matrix_x0, matrix_x0T);
       
-      for(int i = 0; i < P0.height; i++)
-      {
-            real_T *pointer = ssGetDWork(S, i);
-            
-            for(int j = 0; j < P0.width; j++)
-                pointer[j] = P0.data[i][j];
-      }
-      
-   /*   P0 = block.DialogPrm(1).Data * block.DialogPrm(1).Data';   % P0
-      block.Dwork(2).Data = P0(1,:);
-      block.Dwork(3).Data = P0(2,:);
-      block.Dwork(4).Data = P0(3,:);
-      block.Dwork(5).Data = P0(4,:);  */
+      //dWork[5] = &P0;
+      ssSetPWorkValue(S,5,a);
+      /* czyszczenie pamiêci po inicjaci */
+      freeMatrix(matrix_x0);
+      freeMatrix(matrix_x0T);
   }
 #endif /*  MDL_START */
 
@@ -285,7 +262,6 @@ static void mdlInitializeSampleTimes(SimStruct *S)
  *    In this function, you compute the outputs of your S-function
  *    block.
  */
- 
 
   
 static void mdlOutputs(SimStruct *S, int_T tid)
@@ -293,32 +269,27 @@ static void mdlOutputs(SimStruct *S, int_T tid)
     /*====================================================================================================================================
                                                             Stworzenie macierzy
     =====================================================================================================================================*/
-    real_T ***pWork = (real_T***)ssGetPWork(S);
-    struct Matrix Ad = createMatrix(pWork[0],4,4);
-    struct Matrix Bd = createMatrix(pWork[1],4,2);
-    struct Matrix Cd = createMatrix(pWork[2],2,4);
-    struct Matrix Z = createMatrix(pWork[3],2,2);
-    struct Matrix V = createMatrix(pWork[4],2,2);
+    //struct Matrix **pWork = (struct Matrix**)ssGetPWork(S);
+    struct Matrix *Ad = (struct Matrix*)ssGetPWorkValue(S, 0);
+    struct Matrix *Bd = (struct Matrix*)ssGetPWorkValue(S, 1);
+    struct Matrix *Cd = (struct Matrix*)ssGetPWorkValue(S, 2);
+    struct Matrix *Z = (struct Matrix*)ssGetPWorkValue(S, 3);
+    struct Matrix *V = (struct Matrix*)ssGetPWorkValue(S, 4);
+    real_T *P = (real_T*)ssGetPWorkValue(S, 5);
     
     real_T *xHat_p = ssGetDiscStates(S);
     const int dimension_xHat[2] = {4,1};
     struct Matrix xHat = createMatrixFromArray(xHat_p, dimension_xHat);
     
-    const real_T *u_p = (const real_T*) ssGetInputPortSignal(S,0);
+    const real_T *u_p = (const real_T*) ssGetInputPortSignal(S,0);      // pomiar wejœcia
     const int dimension_u[2] = {2,1};
-    struct Matrix u = createMatrixFromArray(uP, dimension_u);
+    struct Matrix u = createMatrixFromArrayC(u_p, dimension_u);
     
-    const real_T *y_p = (const real_T*) ssGetInputPortSignal(S,1);
-    real_T *yP = y_p;
+    const real_T *y_p = (const real_T*) ssGetInputPortSignal(S,1);            // pomiar wyjœcia
     const int dimension_y[2] = {2,1};
-    struct Matrix y = createMatrixFromArray(yP, dimension_y);
+    struct Matrix y = createMatrixFromArrayC(y_p, dimension_y);
     
-    real_T **table_P = (real_T**)malloc(4 * sizeof(real_T*));
-    for(int i = 0; i < 4; i++)
-           table_P[i] = ssGetDWork(S, i);
-    struct Matrix P = dWorkToMatrix(table_P, 4, 4);
-    
-    real_T       *estymaty = ssGetOutputPortSignal(S,0);
+    real_T       *estymaty = ssGetOutputPortSignal(S,0);                // wyjœcie
 
     /*=====================================================================================================================================
                                                                 Obliczenia
@@ -339,12 +310,12 @@ static void mdlOutputs(SimStruct *S, int_T tid)
     */
     
 // xHat_kk1:
-struct Matrix xHat_kk1 = add_Matrixes(multiply_Matrixes(Ad, xHat), multiply_Matrixes(Bd, u)); // (Ad * x + Bd * (u+H))
+//struct Matrix xHat_kk1 = add_Matrixes(multiply_Matrixes(Ad, xHat), multiply_Matrixes(Bd, u)); // (Ad * x + Bd * (u+H))
 
 // P_kk1:                                                                                 
-struct Matrix P_kk1_1 = multiply_Matrixes(multiply_Matrixes(Ad, P), get_Transposed_Matrix(Ad));
-struct Matrix P_kk1_2 = multiply_Matrixes(multiply_Matrixes(Bd, Z), get_Transposed_Matrix(Bd));
-struct Matrix P_kk1 = add_Matrixes(P_kk1_1, P_kk1_2); // P_kk1 = Ad * P * Ad' + G * Z * G'
+//struct Matrix P_kk1_1 = multiply_Matrixes(multiply_Matrixes(Ad, P), get_Transposed_Matrix(Ad));
+//struct Matrix P_kk1_2 = multiply_Matrixes(multiply_Matrixes(Bd, Z), get_Transposed_Matrix(Bd));
+//struct Matrix P_kk1 = add_Matrixes(P_kk1_1, P_kk1_2); // P_kk1 = Ad * P * Ad' + G * Z * G'
 /*
 
 % P_kk1:
@@ -367,7 +338,7 @@ block.OutputPort(1).Data = xHat_kk1 + K * (block.InputPort(2).Data + block.Dwork
                        
 
     */
-    y[0] = 0;
+    estymaty[0] = 0;
 
     
     //free(a[0]);
@@ -416,7 +387,7 @@ block.OutputPort(1).Data = xHat_kk1 + K * (block.InputPort(2).Data + block.Dwork
  */
 static void mdlTerminate(SimStruct *S)
 {
-    freePWorkMemory(S);
+    //freePWorkMemory(S,6);
 }
 
 /******************************************************************************************************************************
@@ -619,7 +590,32 @@ struct Matrix createMatrixFromArray(real_T *vector, const int *dimension)  // st
     return matrix;
 }
 
-struct Matrix dWorkToMatrix(real_T **dWork, int height, int width)     //zak³¹dam ¿e macierz jest kwadratowa
+struct Matrix createMatrixFromArrayC(const real_T *vector, const int *dimension)  // stworzenie macierzy z tablicy
+{
+    struct Matrix matrix;
+    matrix.height = dimension[0];
+    matrix.width  = dimension[1];
+    
+    
+    real_T** table = (real_T**)malloc(matrix.height*sizeof(real_T*));
+    int i;
+
+    for(i=0; i<matrix.height; i++)
+    {
+        table[i] = (real_T*)malloc(matrix.width*sizeof(real_T));
+        for(int j = 0; j < matrix.width; j++)
+        {
+            
+            table[i][j] = vector[i + matrix.height * j]; 
+        }
+        
+    }
+    matrix.data = table;
+    
+    return matrix;
+}
+
+struct Matrix dWorkToMatrixC(real_T **dWork, int height, int width)     //zak³¹dam ¿e macierz jest kwadratowa
 {
     struct Matrix matrix;
     matrix.height = height;
@@ -636,14 +632,13 @@ struct Matrix dWorkToMatrix(real_T **dWork, int height, int width)     //zak³¹da
     return matrix;
 }
 
-void freePWorkMemory(SimStruct *S)
+void freePWorkMemory(SimStruct *S, int amount)
 {
-    real_T ***pWork = (real_T***)ssGetPWork(S);   //pobranie wskaŸnika na PWork
-    freeMatrixData(pWork[0], 4, 4);           // zwolnienie miejsca macierzy Ad
-    freeMatrixData(pWork[1], 4, 2);           // Bd
-    freeMatrixData(pWork[2], 2, 4);           // Cd
-    freeMatrixData(pWork[3], 2, 2);           // Z
-    freeMatrixData(pWork[4], 2, 2);           // V
+    for(int i = 0; i < amount; i++ )
+    {
+       struct Matrix *pointer = (struct Matrix*)ssGetPWorkValue(S, i);
+       freeMatrix(*pointer);  
+    }
 }
 
 void freeMatrixData(real_T **matrixData, int height, int width)

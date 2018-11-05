@@ -7,7 +7,7 @@ rng('default'); rng(8787);          % parametry generatora liczb losowych
 
 a=1;                                % przyspieszenie pojazdu [m/s^2]
 Ts=0.001;                             % krok symulacji [s]
-t=0:Ts:600*Ts-Ts;                          % czas symulacji [s] 
+t=0:Ts:10000*Ts-Ts;                          % czas symulacji [s] 
  
 m=3;								% rz¹d modelu procesu
 dq=0.01; 								% odchylenie standardowe szumu procesu
@@ -66,9 +66,9 @@ for k = 1:length(t)
         x = [x1;x2;x(3)];
       % WYKONANIE POMIARU z(k+1)
         z=C*x+dr*randn(2,1);
-      A = [1      Ts/Ck         0      ;
-          -Ts*L -Ts*xe(3)/L+1 -Ts*xe(2)/L;
-            0        0           1     ];
+      A = [1,      Ts/Ck,         0      ;
+          -Ts*L, -Ts*xe(3)/L+1, -Ts*xe(2)/L;
+            0,        0,           1     ];
         if k == 300
             u = 0;
         end
@@ -77,9 +77,12 @@ for k = 1:length(t)
         P1=A*P*A'+G*Q*G';
       % OBLICZENIE WZMOCNIENIA KALMANA A(k+1)
         KA=P1*C'*inv(C*P1*C'+R);
-
+        f = A*xe+B*u;
+%         f = [(1/L)*(u-xe(3)*xe(2)-xe(1));
+%              xe(2)/Ck;
+%              xe(3)];
       % OBLICZENIE PROGNOZY POMIARU z(k+1/k)
-        z1=C*(A*xe+B*u);
+        z1=C*f;
       % OBLICZENIE ESTYMATY STANU x(k+1/k+1)
         xe=A*xe+B*u+KA*(z-z1);
       % OBLICZENIE MACIERZY WARIANCJI ESTYMATY P(k+1/k+1)

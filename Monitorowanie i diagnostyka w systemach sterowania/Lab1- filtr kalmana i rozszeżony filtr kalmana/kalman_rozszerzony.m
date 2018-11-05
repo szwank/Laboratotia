@@ -1,31 +1,33 @@
-clc; clear all; close all;
+%clc; clear all; close all;
 
-rng('default'); rng('shuffle')          % parametry generatora liczb losowych
+%rng('default'); rng('shuffle')          % parametry generatora liczb losowych
 %rng('shuffle');
 
 % INICJALIZACJA PARAMETRÓW
 
 Ts=1;                             % krok symulacji [s]
-t=1:Ts:150;                          % czas symulacji [s] 
+t=1:Ts:300;                          % czas symulacji [s] 
  
 m=2;								% rz¹d modelu procesu
 dq=1; 								% odchylenie standardowe szumu procesu
-dr=10; 								% odchylenie standardowe szumu pomiaru
+dr=1; 								% odchylenie standardowe szumu pomiaru
 ddq=1;							% wariancja szumu procesu
-ddr=100;							% wariancja szumu pomiaru
+ddr=1;							% wariancja szumu pomiaru
 
 
-Z=ddq*eye(1);                       % macierz wariancji szumu w(k) procesu (sta³a)
+Z=ddq*eye(1); % macierz wariancji szumu w(k) procesu (sta³a)
+%Z=[1 0;0 0];
 V=ddr*eye(1);           			% macierz wariancji szumu v(k) pomiaru (sta³a)
 P=ddq*eye(m);                			    % inicjalizacja macierzy wariancji estymaty procesu (zmienna)
 
 
-a = 0.35;
-xe = [1;1];
-x = [1; a];
+a = 0.75;
+xe = [0;0.5];
+x = [0; a];
 A = [a x(1);
      0    1];
-B = [0;1];
+%B = [0;1];
+B = [0;0];
 C = [1 0];
 G = [1;0];
 
@@ -60,7 +62,8 @@ for k = 1:length(t)
       % OBLICZENIE WZMOCNIENIA KALMANA A(k+1)
         KA=P1*C'*inv(C*P1*C'+V);
       % OBLICZENIE PROGNOZY STANU PROCESU x(k+1/k)
-        x1=A*xe;
+        %x1=A*xe;
+        x1=[xe(2)*xe(1); xe(2)];
       % OBLICZENIE PROGNOZY POMIARU z(k+1/k)
         z1=C*x1;
       % OBLICZENIE ESTYMATY STANU x(k+1/k+1)

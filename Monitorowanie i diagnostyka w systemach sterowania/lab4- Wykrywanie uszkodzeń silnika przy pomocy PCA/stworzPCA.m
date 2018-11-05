@@ -132,13 +132,13 @@ T2_L_pro = diag(T2_L_pro);
 
 %% Policzenie granic SPE i T2
 
-SPE_limit = policz_SPE_limit(wektor_wartosci_wlasnych, procent_SPE);
+SPE_limit = policz_SPE_limit([], procent_SPE);
 T2_limit = policz_T2_limit(X_PCA, procent_T2);
 
-SPE_limit_L_1 = policz_SPE_limit(zredukowany_wektor_wartosci_wlasnych_1, procent_SPE);
+SPE_limit_L_1 = policz_SPE_limit(wektor_wartosci_wlasnych - [zredukowany_wektor_wartosci_wlasnych_1,zeros(1,length(wektor_wartosci_wlasnych)-length(zredukowany_wektor_wartosci_wlasnych_1))], procent_SPE);
 T2_limit_L_1 = policz_T2_limit(X_PCAL_1, procent_T2);
 
-SPE_limit_L_pro = policz_SPE_limit(zredukowany_wektor_wartosci_wlasnych_pro, procent_SPE);
+SPE_limit_L_pro = policz_SPE_limit(wektor_wartosci_wlasnych - [zredukowany_wektor_wartosci_wlasnych_pro,zeros(1,length(wektor_wartosci_wlasnych)-length(zredukowany_wektor_wartosci_wlasnych_pro))], procent_SPE);
 T2_limit_L_pro = policz_T2_limit(X_PCAL_pro, procent_T2);
 %% wykresiki SPE I T2
 figure(2)

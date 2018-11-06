@@ -40,13 +40,13 @@ void freeTable(double** table, int height);
 
 void printMatrix(struct Matrix *matrix);
 
-struct Matrix* add_Matrixes(struct Matrix *matrix_a, struct Matrix *matrix_b );
+struct Matrix* add_Matrixes(SimStruct *S, struct Matrix *matrix_a, struct Matrix *matrix_b);
 
-struct Matrix* substract_Matrixes(struct Matrix *matrix_a, struct Matrix *matrix_b );
+struct Matrix* substract_Matrixes(SimStruct *S, struct Matrix *matrix_a, struct Matrix *matrix_b);
 
 void assertSameSize(struct Matrix *matrix_a, struct Matrix *matrix_b);
 
-struct Matrix* multiply_Matrixes(struct Matrix *matrix_a, struct Matrix *matrix_b);
+struct Matrix* multiply_Matrixes(SimStruct *S, struct Matrix *matrix_a, struct Matrix *matrix_b);
 
 void assertSquare(struct Matrix *matrix);
 
@@ -54,7 +54,7 @@ struct Matrix* get_Transposed_Matrix(struct Matrix *matrix);
 
 struct Matrix* create_diag_matrix(int size);
 
-struct Matrix* invert2x2Matrix(struct Matrix *matrix);
+struct Matrix* invert2x2Matrix(SimStruct *S, struct Matrix *matrix);
 
 //struct Matrix createMatrix(real_T **matrixData, int height, int width);
 
@@ -246,15 +246,15 @@ static void mdlInitializeSampleTimes(SimStruct *S)
       const mxArray *x0_mx = ssGetSFcnParam(S, 0);      // Pobranie parametru z bloczka s-funkcij
       real_T *x0 = mxGetPr(x0_mx);                      // Pobranie parametru z bloczka s-funkcij- stworzenie tabliczy
       const int *dimension_x0 = mxGetDimensions(x0_mx);                     // Pobranie wymiaru parametru bloczka s-funkcij
-      struct Matrix matrix_x0 = createMatrixFromArray(x0, dimension_x0);    // Stworzenie macierzy z wyci¹gnietej tablicy
-      struct Matrix *matrix_x0T = get_Transposed_Matrix(&matrix_x0);
+      struct Matrix *matrix_x0 = createMatrixFromArray(x0, dimension_x0);    // Stworzenie macierzy z wyci¹gnietej tablicy
+      struct Matrix *matrix_x0T = get_Transposed_Matrix(matrix_x0);
                                           //testy
-      struct Matrix *P0 = multiply_Matrixes(&matrix_x0, matrix_x0T);
+      struct Matrix *P0 = multiply_Matrixes(S, matrix_x0, matrix_x0T);
       
       //dWork[5] = &P0;
       ssSetPWorkValue(S,5,P0);
       /* czyszczenie pamiêci po inicjaci */
-      freeMatrix(&matrix_x0);               // Zwolnienie pamiêci
+      freeMatrix(matrix_x0);               // Zwolnienie pamiêci
       freeMatrix(matrix_x0T);
   }
 #endif /*  MDL_START */
@@ -312,51 +312,94 @@ static void mdlOutputs(SimStruct *S, int_T tid)
     */
     
     // xHat_kk1:
-    struct Matrix *xHat_kk1_1 = multiply_Matrixes(Ad, xHat); // Ad * x
-    struct Matrix *xHat_kk1_2 = multiply_Matrixes(Bd, u);   // Bd * u
-    struct Matrix *xHat_kk1 = add_Matrixes(xHat_kk1_1, xHat_kk1_2); // (Ad * x + Bd * (u+H))
+    struct Matrix *xHat_kk1_1 = multiply_Matrixes(S, Ad, xHat); // Ad * x
+    struct Matrix *xHat_kk1_2 = multiply_Matrixes(S, Bd, u);   // Bd * u
+    struct Matrix *xHat_kk1 = add_Matrixes(S, xHat_kk1_1, xHat_kk1_2); // (Ad * x + Bd * (u+H))
 
     // P_kk1:
-    struct Matrix *P_kk1_1 = multiply_Matrixes(Ad, P); // Ad * P
-    struct Matrix Ad_T = get_Transposed_Matrix(Ad);                                             // Ad'
-    struct Matrix *P_kk1_2 = multiply_Matrixes(P_kk1_1, Ad_T); // Ad * P * Ad'
-    struct Matrix Bd_T = get_Transposed_Matrix(Bd);                                             // Bd'
-    struct Matrix *P_kk1_3 = multiply_Matrixes(Bd, Z); // G * Z
-    struct Matrix *P_kk1_4 = multiply_Matrixes(P_kk1_3, Bd_T); // G * Z * G'
-    struct Matrix *P_kk1 = add_Matrixes(P_kk1_2, P_kk1_4); // P_kk1 = Ad * P * Ad' + G * Z * G'
+    struct Matrix *P_kk1_1 = multiply_Matrixes(S, Ad, P); // Ad * P
+    struct Matrix *Ad_T = get_Transposed_Matrix(Ad);                                             // Ad'
+    struct Matrix *P_kk1_2 = multiply_Matrixes(S, P_kk1_1, Ad_T); // Ad * P * Ad'
+    struct Matrix *Bd_T = get_Transposed_Matrix(Bd);                                             // Bd'
+    struct Matrix *P_kk1_3 = multiply_Matrixes(S, Bd, Z); // G * Z
+    struct Matrix *P_kk1_4 = multiply_Matrixes(S, P_kk1_3, Bd_T); // G * Z * G'
+    struct Matrix *P_kk1 = add_Matrixes(S, P_kk1_2, P_kk1_4); // P_kk1 = Ad * P * Ad' + G * Z * G'
 
     // K:
-    struct Matrix Cd_T = get_Transposed_Matrix(Cd);                                             // Cd'
-    struct Matrix *K1 = multiply_Matrixes(Cd, P_kk1);            // Cd * P_kk1
-    struct Matrix *K2 = multiply_Matrixes(K1, Cd_T);             // Cd * P_kk1 * Cd'
-    struct Matrix *K3 = add_Matrixes(K2, V);                     // Cd * P_kk1 * Cd' + V
-    struct Matrix *K4 = multiply_Matrixes(P_kk1, Cd_T)           // P_kk1 * Cd'
-    struct Matrix *K3_inv = invert2x2Matrix(K3);
-    struct Matrix *K = multiply_Matrixes(K4, K3_inv);  // K = P_kk1 * Cd' * inv(Cd * P_kk1 * Cd' + V)
+    struct Matrix *Cd_T = get_Transposed_Matrix(Cd);                                             // Cd'
+    struct Matrix *K1 = multiply_Matrixes(S, Cd, P_kk1);            // Cd * P_kk1
+    struct Matrix *K2 = multiply_Matrixes(S, K1, Cd_T);             // Cd * P_kk1 * Cd'
+    struct Matrix *K3 = add_Matrixes(S, K2, V);                     // Cd * P_kk1 * Cd' + V
+    struct Matrix *K4 = multiply_Matrixes(S, P_kk1, Cd_T);           // P_kk1 * Cd'
+    struct Matrix *K3_inv = invert2x2Matrix(S, K3);
+    struct Matrix *K = multiply_Matrixes(S, K4, K3_inv);  // K = P_kk1 * Cd' * inv(Cd * P_kk1 * Cd' + V)
 
     // P:
     struct Matrix *K_T = get_Transposed_Matrix(K);
-    struct Matrix *P1 = multiply_Matrixes(K,V);                         // K * V
-    struct Matrix *P2 = multiply_Matrixes(P1, K_T);                     // K * V * K'
+    struct Matrix *P1 = multiply_Matrixes(S, K,V);                         // K * V
+    struct Matrix *P2 = multiply_Matrixes(S, P1, K_T);                     // K * V * K'
     struct Matrix *diag4 = create_diag_matrix(4);                       // eye(4)
-    struct Matrix *P3 = multiply_Matrixes(K, Cd);                       // K * Cd
-    struct Matrix *P4 = substract_Matrixes(diag4, P3);                  // eye(4) - K * Cd
+    struct Matrix *P3 = multiply_Matrixes(S, K, Cd);                       // K * Cd
+    struct Matrix *P4 = substract_Matrixes(S, S, diag4, P3);                  // eye(4) - K * Cd
     struct Matrix *P4_T = get_Transposed_Matrix(P4);                    // (eye(4) - K * Cd)'
-    struct Matrix *P5 = multiply_Matrixes(P4, P_kk1);                   // (eye(4) - K * Cd) * P_kk1
-    struct Matrix *P6 = multiply_Matrixes(P5, P4_T)                     // (eye(4) - K * Cd) * P_kk1 * (eye(4) - K * Cd)'
-    struct Matrix *P = add_Matrixes(P6, P2);                            // (eye(4) - K * Cd) * P_kk1 * (eye(4) - K * Cd)' + K * V * K'
-
+    struct Matrix *P5 = multiply_Matrixes(S, P4, P_kk1);                   // (eye(4) - K * Cd) * P_kk1
+    struct Matrix *P6 = multiply_Matrixes(S, P5, P4_T);                     // (eye(4) - K * Cd) * P_kk1 * (eye(4) - K * Cd)'
+    struct Matrix *P_obl = add_Matrixes(S, P6, P2);                        // (eye(4) - K * Cd) * P_kk1 * (eye(4) - K * Cd)' + K * V * K'
+    ssSetPWorkValue(S, 5, P_obl);                                   // Zmiana wskaŸnika w PWorku
+    freeMatrix(P);                                                  // Usuniêcie macierzy P
+    
     // xHat:
-    struct Matrix *xHat_1 = multiply_Matrixes(Cd, xHat_kk1);    // Cd * xHat_kk1
-    struct Matrix *xHat_2 = substract_Matrixes(y, xHat_1);      // y - Cd * xHat_kk1
-    struct Matrix *xHat_3 = multiply_Matrixes(K, xHat_2);       // K * [y - Cd * xHat_kk1]
-    struct Matrix *xHat = add_Matrixes(Hat_kk1, xHat_3);        // Hat_kk1 + K * [(y+F) - Cd * xHat_kk1]
+    struct Matrix *xHat_1 = multiply_Matrixes(S, Cd, xHat_kk1);    // Cd * xHat_kk1
+    struct Matrix *xHat_2 = substract_Matrixes(S, y, xHat_1);      // y - Cd * xHat_kk1
+    struct Matrix *xHat_3 = multiply_Matrixes(S, K, xHat_2);       // K * [y - Cd * xHat_kk1]
+    struct Matrix *xHat_obl = add_Matrixes(S, xHat_kk1, xHat_3);        // Hat_kk1 + K * [(y+F) - Cd * xHat_kk1]
     
     // wyprowadzenie wartoœci wyjœcia poza bloczek:
-    estymaty[0] = xHat->data[0][0];
-    estymaty[1] = xHat->data[1][0];
-    estymaty[2] = xHat->data[2][0];
-    estymaty[3] = xHat->data[3][0];
+    estymaty[0] = xHat_obl->data[0][0];
+    estymaty[1] = xHat_obl->data[1][0];
+    estymaty[2] = xHat_obl->data[2][0];
+    estymaty[3] = xHat_obl->data[3][0];
+    
+    
+    // Sprz¹tniêcie ba³aganu:
+    // xHat_kk1:
+    freeMatrix(xHat_kk1_1);
+    freeMatrix(xHat_kk1_2);
+    freeMatrix(xHat_kk1);
+    
+    // P_kk1:
+    freeMatrix(P_kk1_1);
+    freeMatrix(Ad_T);
+    freeMatrix(P_kk1_2);
+    freeMatrix(Bd_T);
+    freeMatrix(P_kk1_3);
+    freeMatrix(P_kk1_4);
+    freeMatrix(P_kk1);
+    
+    // K:
+    freeMatrix(Cd_T);
+    freeMatrix(K1);
+    freeMatrix(K2);
+    freeMatrix(K3);
+    freeMatrix(K4);
+    freeMatrix(K3_inv);
+    freeMatrix(K);
+    
+    // P:
+    freeMatrix(K_T);
+    freeMatrix(P1);                   
+    freeMatrix(P2);                   
+    freeMatrix(diag4);                   
+    freeMatrix(P3);                 
+    freeMatrix(P4);               
+    freeMatrix(P4_T);            
+    freeMatrix(P5);        
+    freeMatrix(P6);          
+    
+    // xHat:
+    freeMatrix(xHat_1);  
+    freeMatrix(xHat_2);   
+    freeMatrix(xHat_3);    
 /*
 
                   
@@ -371,7 +414,6 @@ block.OutputPort(1).Data = xHat_kk1 + K * (block.InputPort(2).Data + block.Dwork
                        
 
     */
-    estymaty[0] = 0;
 
     
     //free(a[0]);
@@ -407,6 +449,14 @@ block.OutputPort(1).Data = xHat_kk1 + K * (block.InputPort(2).Data + block.Dwork
    */
   static void mdlDerivatives(SimStruct *S)
   {
+      real_T *dX = ssGetdX(S);
+      real_T *X = ssGetDiscStates(S);
+      
+      for(int i = 0; i < 4; i++)
+      {
+          dX[i] = X[i];         // przepisanie zmiennych   
+      }
+      
   }
 #endif /* MDL_DERIVATIVES */
 
@@ -420,7 +470,7 @@ block.OutputPort(1).Data = xHat_kk1 + K * (block.InputPort(2).Data + block.Dwork
  */
 static void mdlTerminate(SimStruct *S)
 {
-    freePWorkMemory(S,6);
+    freePWorkMemory(S);
 }
 
 /******************************************************************************************************************************
@@ -479,9 +529,9 @@ void freeTable(double** data, int height)
     free(data);
 }
 
-struct Matrix* add_Matrixes(struct Matrix *matrix_a, struct Matrix *matrix_b )
+struct Matrix* add_Matrixes(SimStruct *S, struct Matrix *matrix_a, struct Matrix *matrix_b )
 {
-    assertSameSize(matrix_a, matrix_b);
+    assertSameSize(S, matrix_a, matrix_b);
 
     struct Matrix *result = createEmptyMatrix(matrix_a->height, matrix_a->width);
     int i, j;
@@ -492,9 +542,9 @@ struct Matrix* add_Matrixes(struct Matrix *matrix_a, struct Matrix *matrix_b )
     return result;
 }
 
-struct Matrix* substract_Matrixes(struct Matrix *matrix_a, struct Matrix *matrix_b )
+struct Matrix* substract_Matrixes(SimStruct *S, struct Matrix *matrix_a, struct Matrix *matrix_b )
 {
-    assertSameSize(matrix_a, matrix_b);
+    assertSameSize(S, matrix_a, matrix_b);
 
     struct Matrix *result = createEmptyMatrix(matrix_a->height, matrix_a->width);
 
@@ -507,27 +557,26 @@ struct Matrix* substract_Matrixes(struct Matrix *matrix_a, struct Matrix *matrix
     return result;
 }
 
-void assertSameSize(struct Matrix *matrix_a, struct Matrix *matrix_b)
+void assertSameSize(SimStruct *S, struct Matrix *matrix_a, struct Matrix *matrix_b)
 {
     if (matrix_a->width != matrix_b->width ||
-            matrix_a->height != matrix_b->height)
+        matrix_a->height != matrix_b->height)
     {
-        printf("wymiary macieerzy siÄ™ nie zgadzaja");
-        //ssSetErrorStatus(S,"The dimensions of the matrixes do not match");
-        //return;
+        ssSetErrorStatus(S,"assertSameSize: The dimensions of the matrixes do not match");
+        return;
     }
 
 }
 
-struct Matrix* multiply_Matrixes(struct Matrix *matrix_a, struct Matrix *matrix_b)
+struct Matrix* multiply_Matrixes(SimStruct *S, struct Matrix *matrix_a, struct Matrix *matrix_b)
 {
     if (matrix_a->width != matrix_b->height)
     {
-        printf("wymiary macierzy sie nie zgadzaja- mnozenie");
-        //return);
+        ssSetErrorStatus(S, "multiply_Matrixes: wymiary macierzy nie zgadzaj¹ siê");
+        return;
     }
 
-    struct Matrix *result = createEmptyMatrix(matrix_b->height, matrix_a->width);
+	struct Matrix *result = createEmptyMatrix(matrix_a->height, matrix_b->width);
 
     int i, j;
     for (i = 0; i < matrix_a->width; i++)
@@ -588,14 +637,17 @@ struct Matrix* create_diag_matrix(int size)
     return result;
 }
 
-struct Matrix* invert2x2Matrix(struct Matrix *matrix)
+struct Matrix* invert2x2Matrix(SimStruct *S, struct Matrix *matrix)
 {
-    if matrix->height != 2 || matrix->width != 2
-            printf("Macierz nie ma wymiaru 2x2- odwracanie macierzy");
+    if (matrix->height != 2 || matrix->width != 2)
+    {
+		ssSetErrorStatus(S, "Macierz nie ma wymiaru 2x2- odwracanie macierzy");
+		return;
+    }
     
-    real_T determinant = matrix->data[0][0]*matrix->data[1][1] - matrix->data[0][1]*matrix->data[1][0];
+    real_T determinant = matrix->data[0][0] * matrix->data[1][1] - matrix->data[0][1] * matrix->data[1][0];
     
-    struct Matrix invertedMatrix = createEmptyMatrix(2,2);
+    struct Matrix *invertedMatrix = createEmptyMatrix(2,2);
     
     invertedMatrix->data[0][0] = determinant * matrix->data[1][1];
     invertedMatrix->data[1][1] = determinant * matrix->data[0][0];

@@ -20,7 +20,7 @@
  */
 #include "simstruc.h"
 #include "matrix.h"
-#include "stdio.h"
+//#include "stdio.h"
 /******************************************************************************************************************************
                                                     Funkcje
  *****************************************************************************************************************************/
@@ -40,13 +40,13 @@ void freeMatrix(struct Matrix *matrix);
 
 void freeTable(double** table, int height);
 
-void printMatrix(SimStruct *S, struct Matrix *matrix);
+void printMatrix( struct Matrix *matrix);
 
 struct Matrix* add_Matrixes(SimStruct *S, struct Matrix *matrix_a, struct Matrix *matrix_b);
 
 struct Matrix* substract_Matrixes(SimStruct *S, struct Matrix *matrix_a, struct Matrix *matrix_b);
 
-void assertSameSize(struct Matrix *matrix_a, struct Matrix *matrix_b);
+void assertSameSize(SimStruct *S, struct Matrix *matrix_a, struct Matrix *matrix_b);
 
 struct Matrix* multiply_Matrixes(SimStruct *S, struct Matrix *matrix_a, struct Matrix *matrix_b);
 
@@ -302,7 +302,7 @@ static void mdlOutputs(SimStruct *S, int_T tid)
     
     
 	ssPrintf("Szwank to noob \n");
-	ssSetErrorStatus(S, "main");
+	//ssSetErrorStatus(S, "main");
 	/*const mxArray *vektor = ssGetSFcnParam(S, 0);
     real_T *tablica = mxGetPr(vektor);
     const int *dimension = mxGetDimensions(vektor);*/
@@ -343,7 +343,7 @@ static void mdlOutputs(SimStruct *S, int_T tid)
     struct Matrix *P2 = multiply_Matrixes(S, P1, K_T);                     // K * V * K'
     struct Matrix *diag4 = create_diag_matrix(4);                       // eye(4)
     struct Matrix *P3 = multiply_Matrixes(S, K, Cd);                       // K * Cd
-    struct Matrix *P4 = substract_Matrixes(S, S, diag4, P3);                  // eye(4) - K * Cd
+    struct Matrix *P4 = substract_Matrixes(S, diag4, P3);                  // eye(4) - K * Cd
     struct Matrix *P4_T = get_Transposed_Matrix(P4);                    // (eye(4) - K * Cd)'
     struct Matrix *P5 = multiply_Matrixes(S, P4, P_kk1);                   // (eye(4) - K * Cd) * P_kk1
     struct Matrix *P6 = multiply_Matrixes(S, P5, P4_T);                     // (eye(4) - K * Cd) * P_kk1 * (eye(4) - K * Cd)'
@@ -507,16 +507,17 @@ double* createEmptyTable2(int size)
     return table;
 }
 
-void printMatrix(SimStruct *S, struct Matrix *matrix)
+void printMatrix( struct Matrix *matrix)
 {
     int i, j;
     for(i=0; i < matrix->height; i++)
     {
         for(j=0; j < matrix->width; j++)
-            ssPrintf(S, "%f ", matrix->data[i][j]);
-        ssPrintf(S,"\n");
+			mexPrintf( "%f ", matrix->data[i][j]);
+		mexPrintf( "\n");
     }
-    ssPrintf(S, "\n");
+	mexPrintf( "\n");
+	mexPrintf("  ..  \n");
 }
 
 void freeMatrix(struct Matrix *matrix)
@@ -542,6 +543,10 @@ struct Matrix* add_Matrixes(SimStruct *S, struct Matrix *matrix_a, struct Matrix
         for (j = 0; j < matrix_b->height; j++)
             result->data[j][i] = matrix_a->data[j][i] + matrix_b->data[j][i];
 
+#if defined DEBUG
+	printMatrix( result);
+#endif
+
     return result;
 }
 
@@ -556,6 +561,10 @@ struct Matrix* substract_Matrixes(SimStruct *S, struct Matrix *matrix_a, struct 
     for (i = 0; i < matrix_a->width; i++)
         for (j = 0; j < matrix_b->height; j++)
             result->data[j][i] = matrix_a->data[j][i] - matrix_b->data[j][i];
+
+#if defined DEBUG
+	printMatrix( result);
+#endif
 
     return result;
 }
@@ -595,8 +604,9 @@ struct Matrix* multiply_Matrixes(SimStruct *S, struct Matrix *matrix_a, struct M
         }
     }
     #if defined DEBUG
-        printMatrix(S, result);
+        printMatrix( result);
     #endif
+        
     return result;
 }
 
@@ -622,6 +632,10 @@ struct Matrix* get_Transposed_Matrix(struct Matrix *matrix)
     for (i = 0; i < matrix->height; i++)
         for (j = 0; j < matrix->width; j++)
             result->data[j][i] = matrix->data[i][j];
+
+#if defined DEBUG
+	printMatrix( result);
+#endif
     return result;
 }
 
@@ -639,6 +653,10 @@ struct Matrix* create_diag_matrix(int size)
                 result->data[i][j] = 1;
             else
                 result->data[i][j] = 0;
+
+#if defined DEBUG
+	printMatrix( result);
+#endif
 
     return result;
 }
@@ -659,6 +677,10 @@ struct Matrix* invert2x2Matrix(SimStruct *S, struct Matrix *matrix)
     invertedMatrix->data[1][1] = determinant * matrix->data[0][0];
     invertedMatrix->data[1][0] = determinant * (- matrix->data[1][0]);
     invertedMatrix->data[0][1] = determinant * (- matrix->data[0][1]);
+
+#if defined DEBUG
+	printMatrix( invertedMatrix);
+#endif
     
     return invertedMatrix;
 }

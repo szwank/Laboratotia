@@ -12,7 +12,7 @@
 
 #define S_FUNCTION_NAME  filtr_kalmana
 #define S_FUNCTION_LEVEL 2
-#define DEBUG
+//#define DEBUG
 
 /*
  * Need to include simstruc.h for the definition of the SimStruct and
@@ -28,7 +28,7 @@ struct Matrix{
 
     int width;
     int height;
-    double **data;
+    long double **data;
 };
 
 struct Matrix* createEmptyMatrix(int height, int width);
@@ -284,15 +284,19 @@ static void mdlOutputs(SimStruct *S, int_T tid)
     real_T *xHat_p = ssGetDiscStates(S);
     const int dimension_xHat[2] = {4,1};
     struct Matrix *xHat = createMatrixFromArray(xHat_p, dimension_xHat);
-    
+	mexPrintf("xHat: \n");
+    printMatrix(xHat);
     const real_T *u_p = (const real_T*) ssGetInputPortSignal(S,0);      // pomiar wejœcia
     const int dimension_u[2] = {2,1};
     struct Matrix *u = createMatrixFromArrayC(u_p, dimension_u);
-    
+	mexPrintf("u: \n");
+    printMatrix(u);
     const real_T *y_p = (const real_T*) ssGetInputPortSignal(S,1);      // pomiar wyjœcia
     const int dimension_y[2] = {2,1};
     struct Matrix *y = createMatrixFromArrayC(y_p, dimension_y);
-    
+	mexPrintf("y: \n");
+    printMatrix(y);
+	mexPrintf("....\n");
     real_T *estymaty = ssGetOutputPortSignal(S,0);                      // wyjœcie
 
     /*=====================================================================================================================================
@@ -301,7 +305,7 @@ static void mdlOutputs(SimStruct *S, int_T tid)
    
     
     
-	ssPrintf("Szwank to noob \n");
+	//ssPrintf("Szwank to noob \n");
 	//ssSetErrorStatus(S, "main");
 	/*const mxArray *vektor = ssGetSFcnParam(S, 0);
     real_T *tablica = mxGetPr(vektor);
@@ -453,11 +457,14 @@ block.OutputPort(1).Data = xHat_kk1 + K * (block.InputPort(2).Data + block.Dwork
   static void mdlDerivatives(SimStruct *S)
   {
       real_T *dX = ssGetdX(S);
-      real_T *X = ssGetDiscStates(S);
+      real_T *Y = ssGetOutputPortSignal(S,0);
+      
+      
       
       for(int i = 0; i < 4; i++)
       {
-          dX[i] = X[i];         // przepisanie zmiennych   
+          mexPrintf("%f",Y[i]);
+          dX[i] = Y[i];         // przepisanie zmiennych   
       }
       
   }
@@ -513,7 +520,7 @@ void printMatrix( struct Matrix *matrix)
     for(i=0; i < matrix->height; i++)
     {
         for(j=0; j < matrix->width; j++)
-			mexPrintf( "%f ", matrix->data[i][j]);
+			mexPrintf( "%2.8f ", matrix->data[i][j]);
 		mexPrintf( "\n");
     }
 	mexPrintf( "\n");
@@ -673,10 +680,10 @@ struct Matrix* invert2x2Matrix(SimStruct *S, struct Matrix *matrix)
     
     struct Matrix *invertedMatrix = createEmptyMatrix(2,2);
     
-    invertedMatrix->data[0][0] = determinant * matrix->data[1][1];
-    invertedMatrix->data[1][1] = determinant * matrix->data[0][0];
-    invertedMatrix->data[1][0] = determinant * (- matrix->data[1][0]);
-    invertedMatrix->data[0][1] = determinant * (- matrix->data[0][1]);
+	invertedMatrix->data[0][0] = matrix->data[1][1] / determinant;
+	invertedMatrix->data[1][1] = matrix->data[0][0] / determinant;
+	invertedMatrix->data[1][0] = (-matrix->data[1][0]) / determinant;
+	invertedMatrix->data[0][1] = (-matrix->data[0][1]) / determinant;
 
 #if defined DEBUG
 	printMatrix( invertedMatrix);

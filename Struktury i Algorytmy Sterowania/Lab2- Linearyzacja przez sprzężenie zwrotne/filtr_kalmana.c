@@ -12,6 +12,7 @@
 
 #define S_FUNCTION_NAME  filtr_kalmana
 #define S_FUNCTION_LEVEL 2
+#define DEBUG
 
 /*
  * Need to include simstruc.h for the definition of the SimStruct and
@@ -19,6 +20,7 @@
  */
 #include "simstruc.h"
 #include "matrix.h"
+#include "stdio.h"
 /******************************************************************************************************************************
                                                     Funkcje
  *****************************************************************************************************************************/
@@ -38,7 +40,7 @@ void freeMatrix(struct Matrix *matrix);
 
 void freeTable(double** table, int height);
 
-void printMatrix(struct Matrix *matrix);
+void printMatrix(SimStruct *S, struct Matrix *matrix);
 
 struct Matrix* add_Matrixes(SimStruct *S, struct Matrix *matrix_a, struct Matrix *matrix_b);
 
@@ -299,7 +301,8 @@ static void mdlOutputs(SimStruct *S, int_T tid)
    
     
     
-	//ssPrintf("Szwank to noob %f\n", *realPtr);
+	ssPrintf("Szwank to noob \n");
+	ssSetErrorStatus(S, "main");
 	/*const mxArray *vektor = ssGetSFcnParam(S, 0);
     real_T *tablica = mxGetPr(vektor);
     const int *dimension = mxGetDimensions(vektor);*/
@@ -504,16 +507,16 @@ double* createEmptyTable2(int size)
     return table;
 }
 
-void printMatrix(struct Matrix *matrix)
+void printMatrix(SimStruct *S, struct Matrix *matrix)
 {
     int i, j;
     for(i=0; i < matrix->height; i++)
     {
         for(j=0; j < matrix->width; j++)
-            printf("%f ", matrix->data[i][j]);
-        printf("\n");
+            ssPrintf(S, "%f ", matrix->data[i][j]);
+        ssPrintf(S,"\n");
     }
-    printf("\n");
+    ssPrintf(S, "\n");
 }
 
 void freeMatrix(struct Matrix *matrix)
@@ -579,18 +582,21 @@ struct Matrix* multiply_Matrixes(SimStruct *S, struct Matrix *matrix_a, struct M
 	struct Matrix *result = createEmptyMatrix(matrix_a->height, matrix_b->width);
 
     int i, j;
-    for (i = 0; i < matrix_a->width; i++)
+    for (i = 0; i < matrix_a->height; i++)
     {
-        for (j = 0; j < matrix_b->height; j++)
+        for (j = 0; j < matrix_b->width; j++)
         {
             double value = 0;
             int k;
             for (k = 0; k < matrix_b->height; k++)
-                value += matrix_a->data[j][k] * matrix_b->data[k][i];
+                value += matrix_a->data[i][k] * matrix_b->data[k][j];
 
-            result->data[j][i] = value;
+            result->data[i][j] = value;
         }
     }
+    #if defined DEBUG
+        printMatrix(S, result);
+    #endif
     return result;
 }
 

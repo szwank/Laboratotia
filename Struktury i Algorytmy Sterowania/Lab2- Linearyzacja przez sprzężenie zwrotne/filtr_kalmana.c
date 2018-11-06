@@ -131,7 +131,7 @@ static void mdlInitializeSizes(SimStruct *S)
     //ssSetInputPortDirectFeedThrough(S, 2, 1);
     //ssSetInputPortDirectFeedThrough(S, 3, 1);
     if (!ssSetNumOutputPorts(S, 1)) return;
-    ssSetOutputPortWidth(S, 0, 1);
+    ssSetOutputPortWidth(S, 0, 4);
     ssSetNumSampleTimes(S, 1);
     ssSetNumRWork(S, 0);
     ssSetNumIWork(S, 0);
@@ -277,7 +277,7 @@ static void mdlOutputs(SimStruct *S, int_T tid)
     struct Matrix *Cd = (struct Matrix*)ssGetPWorkValue(S, 2);
     struct Matrix *Z = (struct Matrix*)ssGetPWorkValue(S, 3);
     struct Matrix *V = (struct Matrix*)ssGetPWorkValue(S, 4);
-    real_T *P = (real_T*)ssGetPWorkValue(S, 5);                 //testy
+    struct Matrix *P = (struct Matrix*)ssGetPWorkValue(S, 5);   
     
     real_T *xHat_p = ssGetDiscStates(S);
     const int dimension_xHat[2] = {4,1};
@@ -311,22 +311,54 @@ static void mdlOutputs(SimStruct *S, int_T tid)
     a[1][0] = 3; a[1][1] = 4;
     */
     
-// xHat_kk1:
-struct Matrix *xHat_kk1 = add_Matrixes(multiply_Matrixes(Ad, xHat), multiply_Matrixes(Bd, u)); // (Ad * x + Bd * (u+H))
+    // xHat_kk1:
+    struct Matrix *xHat_kk1_1 = multiply_Matrixes(Ad, xHat); // Ad * x
+    struct Matrix *xHat_kk1_2 = multiply_Matrixes(Bd, u);   // Bd * u
+    struct Matrix *xHat_kk1 = add_Matrixes(xHat_kk1_1, xHat_kk1_2); // (Ad * x + Bd * (u+H))
 
-// P_kk1:                                                                                 
-struct Matrix *P_kk1_1 = multiply_Matrixes(multiply_Matrixes(Ad, P), get_Transposed_Matrix(Ad)); // Ad * P * Ad'
-struct Matrix *P_kk1_2 = multiply_Matrixes(multiply_Matrixes(Bd, Z), get_Transposed_Matrix(Bd)); // G * Z * G'
-struct Matrix *P_kk1 = add_Matrixes(P_kk1_1, P_kk1_2); // P_kk1 = Ad * P * Ad' + G * Z * G'
+    // P_kk1:
+    struct Matrix *P_kk1_1 = multiply_Matrixes(Ad, P); // Ad * P
+    struct Matrix Ad_T = get_Transposed_Matrix(Ad);                                             // Ad'
+    struct Matrix *P_kk1_2 = multiply_Matrixes(P_kk1_1, Ad_T); // Ad * P * Ad'
+    struct Matrix Bd_T = get_Transposed_Matrix(Bd);                                             // Bd'
+    struct Matrix *P_kk1_3 = multiply_Matrixes(Bd, Z); // G * Z
+    struct Matrix *P_kk1_4 = multiply_Matrixes(P_kk1_3, Bd_T); // G * Z * G'
+    struct Matrix *P_kk1 = add_Matrixes(P_kk1_2, P_kk1_4); // P_kk1 = Ad * P * Ad' + G * Z * G'
 
-// K:
-struct Matrix 
+    // K:
+    struct Matrix Cd_T = get_Transposed_Matrix(Cd);                                             // Cd'
+    struct Matrix *K1 = multiply_Matrixes(Cd, P_kk1);            // Cd * P_kk1
+    struct Matrix *K2 = multiply_Matrixes(K1, Cd_T);             // Cd * P_kk1 * Cd'
+    struct Matrix *K3 = add_Matrixes(K2, V);                     // Cd * P_kk1 * Cd' + V
+    struct Matrix *K4 = multiply_Matrixes(P_kk1, Cd_T)           // P_kk1 * Cd'
+    struct Matrix *K3_inv = invert2x2Matrix(K3);
+    struct Matrix *K = multiply_Matrixes(K4, K3_inv);  // K = P_kk1 * Cd' * inv(Cd * P_kk1 * Cd' + V)
+
+    // P:
+    struct Matrix *K_T = get_Transposed_Matrix(K);
+    struct Matrix *P1 = multiply_Matrixes(K,V);                         // K * V
+    struct Matrix *P2 = multiply_Matrixes(P1, K_T);                     // K * V * K'
+    struct Matrix *diag4 = create_diag_matrix(4);                       // eye(4)
+    struct Matrix *P3 = multiply_Matrixes(K, Cd);                       // K * Cd
+    struct Matrix *P4 = substract_Matrixes(diag4, P3);                  // eye(4) - K * Cd
+    struct Matrix *P4_T = get_Transposed_Matrix(P4);                    // (eye(4) - K * Cd)'
+    struct Matrix *P5 = multiply_Matrixes(P4, P_kk1);                   // (eye(4) - K * Cd) * P_kk1
+    struct Matrix *P6 = multiply_Matrixes(P5, P4_T)                     // (eye(4) - K * Cd) * P_kk1 * (eye(4) - K * Cd)'
+    struct Matrix *P = add_Matrixes(P6, P2);                            // (eye(4) - K * Cd) * P_kk1 * (eye(4) - K * Cd)' + K * V * K'
+
+    // xHat:
+    struct Matrix *xHat_1 = multiply_Matrixes(Cd, xHat_kk1);    // Cd * xHat_kk1
+    struct Matrix *xHat_2 = substract_Matrixes(y, xHat_1);      // y - Cd * xHat_kk1
+    struct Matrix *xHat_3 = multiply_Matrixes(K, xHat_2);       // K * [y - Cd * xHat_kk1]
+    struct Matrix *xHat = add_Matrixes(Hat_kk1, xHat_3);        // Hat_kk1 + K * [(y+F) - Cd * xHat_kk1]
+    
+    // wyprowadzenie wartoœci wyjœcia poza bloczek:
+    estymaty[0] = xHat->data[0][0];
+    estymaty[1] = xHat->data[1][0];
+    estymaty[2] = xHat->data[2][0];
+    estymaty[3] = xHat->data[3][0];
 /*
-K = P_kk1 * Cd' * inv(Cd * P_kk1 * Cd' + V);    % (P_kk1 * Cd' * inv(Cd * P_kk1 * Cd' + V))
 
-% P:
-P = (eye(4) - K * Cd) * P_kk1 *(eye(4) - K * Cd)' + ...
-                      K * V * K'; % (eye(4) - K * Cd) * P_kk1 * (eye(4) - K * Cd)' + K * V * K'
                   
 block.Dwork(2).Data = P(1,:);       % aktualizacja P
 block.Dwork(3).Data = P(2,:);

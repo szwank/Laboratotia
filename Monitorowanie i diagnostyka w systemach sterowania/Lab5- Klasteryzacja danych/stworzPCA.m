@@ -141,7 +141,7 @@ T2_limit_L_1 = policz_T2_limit(X_PCAL_1, procent_T2);
 SPE_limit_L_pro = policz_SPE_limit(wektor_wartosci_wlasnych - [zredukowany_wektor_wartosci_wlasnych_pro,zeros(1,length(wektor_wartosci_wlasnych)-length(zredukowany_wektor_wartosci_wlasnych_pro))], procent_SPE);
 T2_limit_L_pro = policz_T2_limit(X_PCAL_pro, procent_T2);
 %% wykresiki SPE I T2
-figure(2)
+figure('NumberTitle', 'off', 'Name', 'Wykres wskaŸników dla danych treningowych');
 
 subplot(3,2,1)                  % Wykres SPE
 plot(1:length(SPE), SPE, 'r*')
@@ -233,7 +233,7 @@ T2_TL = diag(T2_TL);
 
 %% Wykresik dla danych testowych
 
-figure(4)
+figure('NumberTitle', 'off', 'Name', 'Wykres porównawczy wskañsników');
 subplot(2,2,1)
 plot(length(SPE) + 1:length(SPE_T) + length(SPE), SPE_T, 'r*', 1 : length(SPE) , SPE, 'b*')
 rysuj_granice(SPE_limit, (length(SPE_T) + length(SPE)));

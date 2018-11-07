@@ -28,7 +28,7 @@ struct Matrix{
 
     int width;
     int height;
-    long double **data;
+    double **data;
 };
 
 struct Matrix* createEmptyMatrix(int height, int width);
@@ -115,13 +115,13 @@ static void mdlInitializeSizes(SimStruct *S)
     }
 
     ssSetNumContStates(S, 0);
-    ssSetNumDiscStates(S, 4); // xHat
+    ssSetNumDiscStates(S, 0); // xHat
 
     if (!ssSetNumInputPorts(S, 2)) return;
     ssSetInputPortWidth(S, 0, 2);       // u
-    ssSetInputPortRequiredContiguous(S, 0, true); /*direct input signal access*/
+    //ssSetInputPortRequiredContiguous(S, 0, true); /*direct input signal access*/
     ssSetInputPortWidth(S, 1, 2);       // y
-    ssSetInputPortRequiredContiguous(S, 1, true); /*direct input signal access*/
+   // ssSetInputPortRequiredContiguous(S, 1, true); /*direct input signal access*/
     /*
      * Set direct feedthrough flag (1=yes, 0=no).
      * A port has direct feedthrough if the input is used in either
@@ -129,25 +129,18 @@ static void mdlInitializeSizes(SimStruct *S)
      */
     ssSetInputPortDirectFeedThrough(S, 0, 1);
     ssSetInputPortDirectFeedThrough(S, 1, 1);
-    //ssSetInputPortDirectFeedThrough(S, 1, 1);
-    //ssSetInputPortDirectFeedThrough(S, 2, 1);
-    //ssSetInputPortDirectFeedThrough(S, 3, 1);
     if (!ssSetNumOutputPorts(S, 1)) return;
     ssSetOutputPortWidth(S, 0, 4);
     ssSetNumSampleTimes(S, 1);
     ssSetNumRWork(S, 0);
     ssSetNumIWork(S, 0);
     
-    ssSetNumPWork(S, 6);    //Ad, Bd, Cd, Z, V, P
+    ssSetNumPWork(S, 7);    //Ad, Bd, Cd, Z, V, P, xHat
     
     ssSetNumModes(S, 0);
     ssSetNumNonsampledZCs(S, 0);
 
     ssSetNumDWork(S, 0);   
-	//ssSetDWorkWidth(S, 0, 1); //P1
-    //ssSetDWorkWidth(S, 1, 1); //P2
-    //ssSetDWorkWidth(S, 2, 1); //P3
-    //ssSetDWorkWidth(S, 3, 1); //P4
     
     
     /* Specify the sim state compliance to be same as a built-in block */
@@ -166,14 +159,14 @@ static void mdlInitializeSizes(SimStruct *S)
  */
 static void mdlInitializeSampleTimes(SimStruct *S)
 {
-    ssSetSampleTime(S, 0, CONTINUOUS_SAMPLE_TIME);
+    //ssSetSampleTime(S, 0, CONTINUOUS_SAMPLE_TIME);
+    ssSetSampleTime(S, 0, 0.0001);
     ssSetOffsetTime(S, 0, 0.0);
-
 }
 
 
 
-#define MDL_INITIALIZE_CONDITIONS   /* Change to #undef to remove function */
+#undef MDL_INITIALIZE_CONDITIONS   /* Change to #undef to remove function */
 #if defined(MDL_INITIALIZE_CONDITIONS)
   /* Function: mdlInitializeConditions ========================================
    * Abstract:
@@ -187,15 +180,7 @@ static void mdlInitializeSampleTimes(SimStruct *S)
    *    restarts execution to reset the states.
    */
   static void mdlInitializeConditions(SimStruct *S)
-  {       
-      const mxArray *x0_mx = ssGetSFcnParam(S, 0);
-      real_T *x0 = mxGetPr(x0_mx);      // Pobranie parametru z s-funkcij
-      real_T *xHat = ssGetDiscStates(S);
-      
-      for(int_T i = 0; i < ssGetNumDiscStates(S); i++)      // zainicjowanie parametrów
-      {
-          xHat[i] = x0[i];    
-      }
+  {          
   }
 #endif /* MDL_INITIALIZE_CONDITIONS */
 
@@ -219,29 +204,29 @@ static void mdlInitializeSampleTimes(SimStruct *S)
     Ad->data[1][0]=0; Ad->data[1][1]=1; Ad->data[1][2]=0;      Ad->data[1][3]=0.0001;
     Ad->data[2][0]=0; Ad->data[2][1]=0; Ad->data[2][2]=1;      Ad->data[2][3]=0;
     Ad->data[3][0]=0; Ad->data[3][1]=0; Ad->data[3][2]=0;      Ad->data[3][3]=1;
-    //dWork[0] = &Ad;
+    
     ssSetPWorkValue(S,0,Ad);                                                        // przypisanie wskaŸnika na macierz do PWektora
     struct Matrix *Bd = createEmptyMatrix(4, 2);
     Bd->data[0][0]=0;      Bd->data[0][1]=0; 
     Bd->data[1][0]=0;      Bd->data[1][1]=0; 
     Bd->data[2][0]=0.0001; Bd->data[2][1]=0; 
     Bd->data[3][0]=0;      Bd->data[3][1]=0.0001; 
-    //dWork[1] = &Bd;
+    
     ssSetPWorkValue(S,1,Bd);
     struct Matrix *Cd = createEmptyMatrix(2, 4);
     Cd->data[0][0]=1; Cd->data[0][1]=0; Cd->data[0][2]=0; Cd->data[0][3]=0;
     Cd->data[1][0]=0; Cd->data[1][1]=1; Cd->data[1][2]=0; Cd->data[1][3]=0;
-    //dWork[2] = &Cd;
+    
     ssSetPWorkValue(S,2,Cd);
     struct Matrix *Z = createEmptyMatrix(2, 2);
     Z->data[0][0]=1; Z->data[0][1]=0; 
     Z->data[1][0]=0; Z->data[1][1]=1; 
-    //dWork[3] = &Z;
+    
     ssSetPWorkValue(S,3,Z);
     struct Matrix *V = createEmptyMatrix(2, 2);
     V->data[0][0]=1; V->data[0][1]=0; 
     V->data[1][0]=0; V->data[1][1]=1; 
-    //dWork[4] = &V;
+    
     ssSetPWorkValue(S,4,V);
     
 	  /* Initializacja macierzy P */
@@ -252,11 +237,12 @@ static void mdlInitializeSampleTimes(SimStruct *S)
       struct Matrix *matrix_x0T = get_Transposed_Matrix(matrix_x0);
                                           //testy
       struct Matrix *P0 = multiply_Matrixes(S, matrix_x0, matrix_x0T);
+     
+      ssSetPWorkValue(S, 5, P0);            // Dodanie P0
+      ssSetPWorkValue(S, 6, matrix_x0);     // Dodanie x0
       
-      //dWork[5] = &P0;
-      ssSetPWorkValue(S,5,P0);
+      
       /* czyszczenie pamiêci po inicjaci */
-      freeMatrix(matrix_x0);               // Zwolnienie pamiêci
       freeMatrix(matrix_x0T);
   }
 #endif /*  MDL_START */
@@ -279,24 +265,23 @@ static void mdlOutputs(SimStruct *S, int_T tid)
     struct Matrix *Cd = (struct Matrix*)ssGetPWorkValue(S, 2);
     struct Matrix *Z = (struct Matrix*)ssGetPWorkValue(S, 3);
     struct Matrix *V = (struct Matrix*)ssGetPWorkValue(S, 4);
-    struct Matrix *P = (struct Matrix*)ssGetPWorkValue(S, 5);   
+    struct Matrix *P = (struct Matrix*)ssGetPWorkValue(S, 5);
+    struct Matrix *xHat = (struct Matrix*)ssGetPWorkValue(S, 6);
     
-    real_T *xHat_p = ssGetDiscStates(S);
-    const int dimension_xHat[2] = {4,1};
-    struct Matrix *xHat = createMatrixFromArray(xHat_p, dimension_xHat);
-	mexPrintf("xHat: \n");
-    printMatrix(xHat);
+    
+	//mexPrintf("xHat: \n");
+    //printMatrix(xHat);
     const real_T *u_p = (const real_T*) ssGetInputPortSignal(S,0);      // pomiar wejœcia
     const int dimension_u[2] = {2,1};
     struct Matrix *u = createMatrixFromArrayC(u_p, dimension_u);
-	mexPrintf("u: \n");
-    printMatrix(u);
+	//mexPrintf("u: \n");
+   // printMatrix(u);
     const real_T *y_p = (const real_T*) ssGetInputPortSignal(S,1);      // pomiar wyjœcia
     const int dimension_y[2] = {2,1};
     struct Matrix *y = createMatrixFromArrayC(y_p, dimension_y);
-	mexPrintf("y: \n");
-    printMatrix(y);
-	mexPrintf("....\n");
+	//mexPrintf("y: \n");
+   //printMatrix(y);
+	//mexPrintf("....\n");
     real_T *estymaty = ssGetOutputPortSignal(S,0);                      // wyjœcie
 
     /*=====================================================================================================================================
@@ -351,21 +336,26 @@ static void mdlOutputs(SimStruct *S, int_T tid)
     struct Matrix *P4_T = get_Transposed_Matrix(P4);                    // (eye(4) - K * Cd)'
     struct Matrix *P5 = multiply_Matrixes(S, P4, P_kk1);                   // (eye(4) - K * Cd) * P_kk1
     struct Matrix *P6 = multiply_Matrixes(S, P5, P4_T);                     // (eye(4) - K * Cd) * P_kk1 * (eye(4) - K * Cd)'
-    struct Matrix *P_obl = add_Matrixes(S, P6, P2);                        // (eye(4) - K * Cd) * P_kk1 * (eye(4) - K * Cd)' + K * V * K'
-    ssSetPWorkValue(S, 5, P_obl);                                   // Zmiana wskaŸnika w PWorku
-    freeMatrix(P);                                                  // Usuniêcie macierzy P
+    freeMatrix(P);                                                      // zwolnienie pamiêci przed ponown¹ inicjalizacj¹
+    P = add_Matrixes(S, P6, P2);                        // (eye(4) - K * Cd) * P_kk1 * (eye(4) - K * Cd)' + K * V * K'
+    ssSetPWorkValue(S, 5, P);                                   // Zmiana wskaŸnika w PWorku
+                                                      
     
     // xHat:
     struct Matrix *xHat_1 = multiply_Matrixes(S, Cd, xHat_kk1);    // Cd * xHat_kk1
     struct Matrix *xHat_2 = substract_Matrixes(S, y, xHat_1);      // y - Cd * xHat_kk1
     struct Matrix *xHat_3 = multiply_Matrixes(S, K, xHat_2);       // K * [y - Cd * xHat_kk1]
-    struct Matrix *xHat_obl = add_Matrixes(S, xHat_kk1, xHat_3);        // Hat_kk1 + K * [(y+F) - Cd * xHat_kk1]
+    freeMatrix(xHat);                                               // zwolnienie pamiêci przed ponown¹ inicjalizacj¹
+    xHat = add_Matrixes(S, xHat_kk1, xHat_3);        // Hat_kk1 + K * [(y+F) - Cd * xHat_kk1]
+    ssSetPWorkValue(S, 6, xHat);                            // podmiana miejsca w pamiêci PWorka
     
     // wyprowadzenie wartoœci wyjœcia poza bloczek:
-    estymaty[0] = xHat_obl->data[0][0];
-    estymaty[1] = xHat_obl->data[1][0];
-    estymaty[2] = xHat_obl->data[2][0];
-    estymaty[3] = xHat_obl->data[3][0];
+    estymaty[0] = xHat->data[0][0];
+    estymaty[1] = xHat->data[1][0];
+    estymaty[2] = xHat->data[2][0];
+    estymaty[3] = xHat->data[3][0];
+    
+    // 
     
     
     // Sprz¹tniêcie ba³aganu:
@@ -407,31 +397,12 @@ static void mdlOutputs(SimStruct *S, int_T tid)
     freeMatrix(xHat_1);  
     freeMatrix(xHat_2);   
     freeMatrix(xHat_3);    
-/*
 
-                  
-block.Dwork(2).Data = P(1,:);       % aktualizacja P
-block.Dwork(3).Data = P(2,:);
-block.Dwork(4).Data = P(3,:);
-block.Dwork(5).Data = P(4,:);
-                  
-% xHat:                  
-block.OutputPort(1).Data = xHat_kk1 + K * (block.InputPort(2).Data + block.Dwork(7).Data - ...
-                           Cd * xHat_kk1); % xHat_kk1 + K * [(y+F) - Cd * xHat_kk1]
-                       
-
-    */
-
-    
-    //free(a[0]);
-    //free(a[1]);
-    //free(a);
-    
 }
 
 
 
-#define MDL_UPDATE  /* Change to #undef to remove function */
+#undef MDL_UPDATE  /* Change to #undef to remove function */
 #if defined(MDL_UPDATE)
   /* Function: mdlUpdate ======================================================
    * Abstract:
@@ -447,7 +418,7 @@ block.OutputPort(1).Data = xHat_kk1 + K * (block.InputPort(2).Data + block.Dwork
 
 
 
-#define MDL_DERIVATIVES  /* Change to #undef to remove function */
+#undef MDL_DERIVATIVES  /* Change to #undef to remove function */
 #if defined(MDL_DERIVATIVES)
   /* Function: mdlDerivatives =================================================
    * Abstract:
@@ -455,18 +426,7 @@ block.OutputPort(1).Data = xHat_kk1 + K * (block.InputPort(2).Data + block.Dwork
    *    The derivatives are placed in the derivative vector, ssGetdX(S).
    */
   static void mdlDerivatives(SimStruct *S)
-  {
-      real_T *dX = ssGetdX(S);
-      real_T *Y = ssGetOutputPortSignal(S,0);
-      
-      
-      
-      for(int i = 0; i < 4; i++)
-      {
-          mexPrintf("%f",Y[i]);
-          dX[i] = Y[i];         // przepisanie zmiennych   
-      }
-      
+  {    
   }
 #endif /* MDL_DERIVATIVES */
 

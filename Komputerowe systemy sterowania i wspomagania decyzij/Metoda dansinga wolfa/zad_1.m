@@ -1,5 +1,4 @@
 
-load('macierze.mat')
+load('macierze_do_linproga.mat')
 
-
-[x, fval] = linprog(C,A1,b1,A0,b0)
+[x, fval] = linprog(c,A2,b2,A1,b1,zeros(1,17));

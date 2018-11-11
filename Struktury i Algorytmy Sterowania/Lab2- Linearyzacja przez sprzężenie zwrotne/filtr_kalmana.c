@@ -12,7 +12,7 @@
 
 #define S_FUNCTION_NAME  filtr_kalmana
 #define S_FUNCTION_LEVEL 2
-#define DEBUG
+//#define DEBUG
 
 /*
  * Need to include simstruc.h for the definition of the SimStruct and
@@ -159,8 +159,8 @@ static void mdlInitializeSizes(SimStruct *S)
  */
 static void mdlInitializeSampleTimes(SimStruct *S)
 {
-    ssSetSampleTime(S, 0, CONTINUOUS_SAMPLE_TIME);
-    //ssSetSampleTime(S, 0, 0.0001);
+    //ssSetSampleTime(S, 0, CONTINUOUS_SAMPLE_TIME);
+    ssSetSampleTime(S, 0, 0.0001);
     ssSetOffsetTime(S, 0, 0.0);
 }
 
@@ -311,8 +311,10 @@ static void mdlOutputs(SimStruct *S, int_T tid)
     struct Matrix *xHat_kk1_1 = multiply_Matrixes(S, Ad, xHat); // Ad * x
     struct Matrix *xHat_kk1_2 = multiply_Matrixes(S, Bd, u);   // Bd * u
     struct Matrix *xHat_kk1 = add_Matrixes(S, xHat_kk1_1, xHat_kk1_2); // (Ad * x + Bd * (u+H))
+    #if defined DEBUG
     mexPrintf("xHat_kk1:\n");
     printMatrix(P);
+    #endif
     // P_kk1:
     struct Matrix *P_kk1_1 = multiply_Matrixes(S, Ad, P); // Ad * P
     struct Matrix *Ad_T = get_Transposed_Matrix(Ad);                                             // Ad'
@@ -321,8 +323,10 @@ static void mdlOutputs(SimStruct *S, int_T tid)
     struct Matrix *P_kk1_3 = multiply_Matrixes(S, Bd, Z); // G * Z
     struct Matrix *P_kk1_4 = multiply_Matrixes(S, P_kk1_3, Bd_T); // G * Z * G'
     struct Matrix *P_kk1 = add_Matrixes(S, P_kk1_2, P_kk1_4); // P_kk1 = Ad * P * Ad' + G * Z * G'
+    #if defined DEBUG
     mexPrintf("P:\n");
     printMatrix(P_kk1);
+    #endif
     // K:
     struct Matrix *Cd_T = get_Transposed_Matrix(Cd);                                             // Cd'
     struct Matrix *K1 = multiply_Matrixes(S, Cd, P_kk1);            // Cd * P_kk1
@@ -331,8 +335,10 @@ static void mdlOutputs(SimStruct *S, int_T tid)
     struct Matrix *K4 = multiply_Matrixes(S, P_kk1, Cd_T);           // P_kk1 * Cd'
     struct Matrix *K3_inv = invert2x2Matrix(S, K3);
     struct Matrix *K = multiply_Matrixes(S, K4, K3_inv);  // K = P_kk1 * Cd' * inv(Cd * P_kk1 * Cd' + V)
+    #if defined DEBUG
     mexPrintf("K:\n");
     printMatrix(K);
+    #endif
     // P:
     struct Matrix *K_T = get_Transposed_Matrix(K);
     struct Matrix *P1 = multiply_Matrixes(S, K,V);                         // K * V
@@ -346,8 +352,10 @@ static void mdlOutputs(SimStruct *S, int_T tid)
     freeMatrix(P);                                                      // zwolnienie pamiêci przed ponown¹ inicjalizacj¹
     P = add_Matrixes(S, P6, P2);                        // (eye(4) - K * Cd) * P_kk1 * (eye(4) - K * Cd)' + K * V * K'
     ssSetPWorkValue(S, 5, P);                                   // Zmiana wskaŸnika w PWorku
+    #if defined DEBUG
     mexPrintf("P:\n");
     printMatrix(P);                                                  
+    #endif
     
     // xHat:
     struct Matrix *xHat_1 = multiply_Matrixes(S, Cd, xHat_kk1);    // Cd * xHat_kk1
@@ -356,8 +364,10 @@ static void mdlOutputs(SimStruct *S, int_T tid)
     freeMatrix(xHat);                                               // zwolnienie pamiêci przed ponown¹ inicjalizacj¹
     xHat = add_Matrixes(S, xHat_kk1, xHat_3);        // Hat_kk1 + K * [(y+F) - Cd * xHat_kk1]
     ssSetPWorkValue(S, 6, xHat);                            // podmiana miejsca w pamiêci PWorka
+    #if defined DEBUG
     mexPrintf("xHat:\n");
     printMatrix(P);
+    #endif
     // wyprowadzenie wartoœci wyjœcia poza bloczek:
     estymaty[0] = xHat->data[0][0];
     estymaty[1] = xHat->data[1][0];

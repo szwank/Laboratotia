@@ -12,7 +12,7 @@
 
 #define S_FUNCTION_NAME  filtr_kalmana
 #define S_FUNCTION_LEVEL 2
-//#define DEBUG
+#define DEBUG
 
 /*
  * Need to include simstruc.h for the definition of the SimStruct and
@@ -119,9 +119,9 @@ static void mdlInitializeSizes(SimStruct *S)
 
     if (!ssSetNumInputPorts(S, 2)) return;
     ssSetInputPortWidth(S, 0, 2);       // u
-    //ssSetInputPortRequiredContiguous(S, 0, true); /*direct input signal access*/
+    ssSetInputPortRequiredContiguous(S, 0, true); /*direct input signal access*/
     ssSetInputPortWidth(S, 1, 2);       // y
-   // ssSetInputPortRequiredContiguous(S, 1, true); /*direct input signal access*/
+    ssSetInputPortRequiredContiguous(S, 1, true); /*direct input signal access*/
     /*
      * Set direct feedthrough flag (1=yes, 0=no).
      * A port has direct feedthrough if the input is used in either
@@ -159,8 +159,8 @@ static void mdlInitializeSizes(SimStruct *S)
  */
 static void mdlInitializeSampleTimes(SimStruct *S)
 {
-    //ssSetSampleTime(S, 0, CONTINUOUS_SAMPLE_TIME);
-    ssSetSampleTime(S, 0, 0.0001);
+    ssSetSampleTime(S, 0, CONTINUOUS_SAMPLE_TIME);
+    //ssSetSampleTime(S, 0, 0.0001);
     ssSetOffsetTime(S, 0, 0.0);
 }
 
@@ -204,46 +204,45 @@ static void mdlInitializeSampleTimes(SimStruct *S)
     Ad->data[1][0]=0; Ad->data[1][1]=1; Ad->data[1][2]=0;      Ad->data[1][3]=0.0001;
     Ad->data[2][0]=0; Ad->data[2][1]=0; Ad->data[2][2]=1;      Ad->data[2][3]=0;
     Ad->data[3][0]=0; Ad->data[3][1]=0; Ad->data[3][2]=0;      Ad->data[3][3]=1;
-    
     ssSetPWorkValue(S,0,Ad);                                                        // przypisanie wskaŸnika na macierz do PWektora
+    
     struct Matrix *Bd = createEmptyMatrix(4, 2);
     Bd->data[0][0]=0;      Bd->data[0][1]=0; 
     Bd->data[1][0]=0;      Bd->data[1][1]=0; 
     Bd->data[2][0]=0.0001; Bd->data[2][1]=0; 
     Bd->data[3][0]=0;      Bd->data[3][1]=0.0001; 
-    
     ssSetPWorkValue(S,1,Bd);
+    
     struct Matrix *Cd = createEmptyMatrix(2, 4);
     Cd->data[0][0]=1; Cd->data[0][1]=0; Cd->data[0][2]=0; Cd->data[0][3]=0;
     Cd->data[1][0]=0; Cd->data[1][1]=1; Cd->data[1][2]=0; Cd->data[1][3]=0;
-    
     ssSetPWorkValue(S,2,Cd);
+    
     struct Matrix *Z = createEmptyMatrix(2, 2);
     Z->data[0][0]=1; Z->data[0][1]=0; 
     Z->data[1][0]=0; Z->data[1][1]=1; 
-    
     ssSetPWorkValue(S,3,Z);
+    
     struct Matrix *V = createEmptyMatrix(2, 2);
     V->data[0][0]=1; V->data[0][1]=0; 
-    V->data[1][0]=0; V->data[1][1]=1; 
-    
+    V->data[1][0]=0; V->data[1][1]=1;   
     ssSetPWorkValue(S,4,V);
     
-	  /* Initializacja macierzy P */
-      const mxArray *x0_mx = ssGetSFcnParam(S, 0);      // Pobranie parametru z bloczka s-funkcij
-      real_T *x0 = mxGetPr(x0_mx);                      // Pobranie parametru z bloczka s-funkcij- stworzenie tabliczy
-      const int *dimension_x0 = mxGetDimensions(x0_mx);                     // Pobranie wymiaru parametru bloczka s-funkcij
-      struct Matrix *matrix_x0 = createMatrixFromArray(x0, dimension_x0);    // Stworzenie macierzy z wyci¹gnietej tablicy
-      struct Matrix *matrix_x0T = get_Transposed_Matrix(matrix_x0);
-                                          //testy
-      struct Matrix *P0 = multiply_Matrixes(S, matrix_x0, matrix_x0T);
-     
-      ssSetPWorkValue(S, 5, P0);            // Dodanie P0
-      ssSetPWorkValue(S, 6, matrix_x0);     // Dodanie x0
-      
-      
-      /* czyszczenie pamiêci po inicjaci */
-      freeMatrix(matrix_x0T);
+  /* Initializacja macierzy P */
+  const mxArray *x0_mx = ssGetSFcnParam(S, 0);      // Pobranie parametru z bloczka s-funkcij
+  real_T *x0 = mxGetPr(x0_mx);                      // Pobranie parametru z bloczka s-funkcij- stworzenie tabliczy
+  const int *dimension_x0 = mxGetDimensions(x0_mx);                     // Pobranie wymiaru parametru bloczka s-funkcij
+  struct Matrix *matrix_x0 = createMatrixFromArray(x0, dimension_x0);    // Stworzenie macierzy z wyci¹gnietej tablicy
+  struct Matrix *matrix_x0T = get_Transposed_Matrix(matrix_x0);
+                                      //testy
+  struct Matrix *P0 = multiply_Matrixes(S, matrix_x0, matrix_x0T);
+
+  ssSetPWorkValue(S, 5, P0);            // Dodanie P0
+  ssSetPWorkValue(S, 6, matrix_x0);     // Dodanie x0
+
+
+  /* czyszczenie pamiêci po inicjaci */
+  freeMatrix(matrix_x0T);
   }
 #endif /*  MDL_START */
 
@@ -269,19 +268,24 @@ static void mdlOutputs(SimStruct *S, int_T tid)
     struct Matrix *xHat = (struct Matrix*)ssGetPWorkValue(S, 6);
     
     
-	//mexPrintf("xHat: \n");
-    //printMatrix(xHat);
+	
     const real_T *u_p = (const real_T*) ssGetInputPortSignal(S,0);      // pomiar wejœcia
     const int dimension_u[2] = {2,1};
     struct Matrix *u = createMatrixFromArrayC(u_p, dimension_u);
-	//mexPrintf("u: \n");
-   // printMatrix(u);
+
     const real_T *y_p = (const real_T*) ssGetInputPortSignal(S,1);      // pomiar wyjœcia
     const int dimension_y[2] = {2,1};
     struct Matrix *y = createMatrixFromArrayC(y_p, dimension_y);
-	//mexPrintf("y: \n");
-   //printMatrix(y);
-	//mexPrintf("....\n");
+    #if defined DEBUG
+        mexPrintf("u: \n");
+        printMatrix(u);
+        mexPrintf("xHat: \n");
+        printMatrix(xHat);
+        mexPrintf("y: \n");
+        printMatrix(y);
+        mexPrintf("....\n");
+    #endif
+	
     real_T *estymaty = ssGetOutputPortSignal(S,0);                      // wyjœcie
 
     /*=====================================================================================================================================
@@ -307,7 +311,8 @@ static void mdlOutputs(SimStruct *S, int_T tid)
     struct Matrix *xHat_kk1_1 = multiply_Matrixes(S, Ad, xHat); // Ad * x
     struct Matrix *xHat_kk1_2 = multiply_Matrixes(S, Bd, u);   // Bd * u
     struct Matrix *xHat_kk1 = add_Matrixes(S, xHat_kk1_1, xHat_kk1_2); // (Ad * x + Bd * (u+H))
-
+    mexPrintf("xHat_kk1:\n");
+    printMatrix(P);
     // P_kk1:
     struct Matrix *P_kk1_1 = multiply_Matrixes(S, Ad, P); // Ad * P
     struct Matrix *Ad_T = get_Transposed_Matrix(Ad);                                             // Ad'
@@ -316,7 +321,8 @@ static void mdlOutputs(SimStruct *S, int_T tid)
     struct Matrix *P_kk1_3 = multiply_Matrixes(S, Bd, Z); // G * Z
     struct Matrix *P_kk1_4 = multiply_Matrixes(S, P_kk1_3, Bd_T); // G * Z * G'
     struct Matrix *P_kk1 = add_Matrixes(S, P_kk1_2, P_kk1_4); // P_kk1 = Ad * P * Ad' + G * Z * G'
-
+    mexPrintf("P:\n");
+    printMatrix(P_kk1);
     // K:
     struct Matrix *Cd_T = get_Transposed_Matrix(Cd);                                             // Cd'
     struct Matrix *K1 = multiply_Matrixes(S, Cd, P_kk1);            // Cd * P_kk1
@@ -325,7 +331,8 @@ static void mdlOutputs(SimStruct *S, int_T tid)
     struct Matrix *K4 = multiply_Matrixes(S, P_kk1, Cd_T);           // P_kk1 * Cd'
     struct Matrix *K3_inv = invert2x2Matrix(S, K3);
     struct Matrix *K = multiply_Matrixes(S, K4, K3_inv);  // K = P_kk1 * Cd' * inv(Cd * P_kk1 * Cd' + V)
-
+    mexPrintf("K:\n");
+    printMatrix(K);
     // P:
     struct Matrix *K_T = get_Transposed_Matrix(K);
     struct Matrix *P1 = multiply_Matrixes(S, K,V);                         // K * V
@@ -339,7 +346,8 @@ static void mdlOutputs(SimStruct *S, int_T tid)
     freeMatrix(P);                                                      // zwolnienie pamiêci przed ponown¹ inicjalizacj¹
     P = add_Matrixes(S, P6, P2);                        // (eye(4) - K * Cd) * P_kk1 * (eye(4) - K * Cd)' + K * V * K'
     ssSetPWorkValue(S, 5, P);                                   // Zmiana wskaŸnika w PWorku
-                                                      
+    mexPrintf("P:\n");
+    printMatrix(P);                                                  
     
     // xHat:
     struct Matrix *xHat_1 = multiply_Matrixes(S, Cd, xHat_kk1);    // Cd * xHat_kk1
@@ -348,7 +356,8 @@ static void mdlOutputs(SimStruct *S, int_T tid)
     freeMatrix(xHat);                                               // zwolnienie pamiêci przed ponown¹ inicjalizacj¹
     xHat = add_Matrixes(S, xHat_kk1, xHat_3);        // Hat_kk1 + K * [(y+F) - Cd * xHat_kk1]
     ssSetPWorkValue(S, 6, xHat);                            // podmiana miejsca w pamiêci PWorka
-    
+    mexPrintf("xHat:\n");
+    printMatrix(P);
     // wyprowadzenie wartoœci wyjœcia poza bloczek:
     estymaty[0] = xHat->data[0][0];
     estymaty[1] = xHat->data[1][0];

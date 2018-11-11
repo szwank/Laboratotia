@@ -198,7 +198,7 @@ static void mdlInitializeSampleTimes(SimStruct *S)
   {
       /* inicjalizacja macierzy stanu */
     //struct Matrix **dWork = (struct Matrix**)ssGetPWork(S);
-    
+
     struct Matrix *Ad = createEmptyMatrix(4, 4);                                    // Stworzenie macierzy stanu
     Ad->data[0][0]=1; Ad->data[0][1]=0; Ad->data[0][2]=0.0001; Ad->data[0][3]=0;
     Ad->data[1][0]=0; Ad->data[1][1]=1; Ad->data[1][2]=0;      Ad->data[1][3]=0.0001;
@@ -254,7 +254,7 @@ static void mdlInitializeSampleTimes(SimStruct *S)
 
   
 static void mdlOutputs(SimStruct *S, int_T tid)
-{
+{   
     /*====================================================================================================================================
                                                             Stworzenie macierzy
     =====================================================================================================================================*/
@@ -306,7 +306,7 @@ static void mdlOutputs(SimStruct *S, int_T tid)
     a[1] = (real_T*)malloc(2*sizeof(real_T));
     a[1][0] = 3; a[1][1] = 4;
     */
-    
+
     // xHat_kk1:
     struct Matrix *xHat_kk1_1 = multiply_Matrixes(S, Ad, xHat); // Ad * x
     struct Matrix *xHat_kk1_2 = multiply_Matrixes(S, Bd, u);   // Bd * u
@@ -315,6 +315,7 @@ static void mdlOutputs(SimStruct *S, int_T tid)
     mexPrintf("xHat_kk1:\n");
     printMatrix(P);
     #endif
+
     // P_kk1:
     struct Matrix *P_kk1_1 = multiply_Matrixes(S, Ad, P); // Ad * P
     struct Matrix *Ad_T = get_Transposed_Matrix(Ad);                                             // Ad'
@@ -327,6 +328,7 @@ static void mdlOutputs(SimStruct *S, int_T tid)
     mexPrintf("P:\n");
     printMatrix(P_kk1);
     #endif
+
     // K:
     struct Matrix *Cd_T = get_Transposed_Matrix(Cd);                                             // Cd'
     struct Matrix *K1 = multiply_Matrixes(S, Cd, P_kk1);            // Cd * P_kk1
@@ -339,6 +341,7 @@ static void mdlOutputs(SimStruct *S, int_T tid)
     mexPrintf("K:\n");
     printMatrix(K);
     #endif
+
     // P:
     struct Matrix *K_T = get_Transposed_Matrix(K);
     struct Matrix *P1 = multiply_Matrixes(S, K,V);                         // K * V
@@ -356,7 +359,7 @@ static void mdlOutputs(SimStruct *S, int_T tid)
     mexPrintf("P:\n");
     printMatrix(P);                                                  
     #endif
-    
+
     // xHat:
     struct Matrix *xHat_1 = multiply_Matrixes(S, Cd, xHat_kk1);    // Cd * xHat_kk1
     struct Matrix *xHat_2 = substract_Matrixes(S, y, xHat_1);      // y - Cd * xHat_kk1
@@ -378,6 +381,10 @@ static void mdlOutputs(SimStruct *S, int_T tid)
     
     
     // Sprz¹tniêcie ba³aganu:
+    // Wygna³y wejœciowe:
+    freeMatrix(u);
+    freeMatrix(y);
+    
     // xHat_kk1:
     freeMatrix(xHat_kk1_1);
     freeMatrix(xHat_kk1_2);

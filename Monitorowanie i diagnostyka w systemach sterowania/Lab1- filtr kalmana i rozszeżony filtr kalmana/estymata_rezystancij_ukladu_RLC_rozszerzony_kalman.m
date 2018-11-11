@@ -15,32 +15,32 @@ dr=0.05; 								% odchylenie standardowe szumu pomiaru
 ddq=dq*dq;							% wariancja szumu procesu
 ddr=dr*dr;							% wariancja szumu pomiaru
 
-Q=ddq*[(Ts^2/2)^2 (Ts^2/2)*Ts; (Ts^2/2)*Ts Ts^2];
+% Q=ddq*[(Ts^2/2)^2 (Ts^2/2)*Ts; (Ts^2/2)*Ts Ts^2];
 Q=ddq*eye(1); % macierz wariancji szumu w(k) procesu (sta³a)
 R=ddr*eye(2);           			% macierz wariancji szumu v(k) pomiaru (sta³a)
 P=ddq*eye(m);                			    % inicjalizacja macierzy wariancji estymaty procesu (zmienna)
 
-L = 1;
-Ck = 0.02;
+L = 100;
+Ck = 1;
 x = [0;
      0;
-     30];
+     25];
 xe = [0;
      0;
      20];
 Uwe = 1;
 
 
-A = [-Ts*L -Ts*x(3)/L+1 -Ts*x(2)/L;
-     1      Ts/Ck         0      ;
-     0        0          1      ];
+A = [1,      Ts/Ck,         0      ;
+          -Ts*L, -(Ts*xe(3)/L)+1, 0;
+            0,        0,           1     ];
 
-B = [Ts/L;
-     0;
+B = [0;
+     Ts/L;
      0];
  
-G = [Ts/L;
-     0;
+G = [0;
+     Ts/L;
      0];             	% model procesu, macierz szumu procesu
 u = [Uwe];                           % modelu procesu, wymuszeni, wejœcie (przyspieszenie)
 C = [1 0 0;
@@ -61,15 +61,18 @@ for k = 1:length(t)
               
       % - GENEROWANIE DANYCH Z PROCESU
       % OBLICZENIE STANU MODELU x(k+1)
-        x2 = (Ts/L)*(u-x(3)*x(2)-x(1)) + x(2) + (Ts/L) * dq * randn;
+%       x1 =  x(2)/Ck;
+%       x2 = (u - x(2)*x(3) - x(1))/L;
+%       x = [x1;x2;x(3)];
         x1 = x(2)*Ts/Ck + x(1);
+        x2 = (Ts/L)*(u-x(3)*x(2)-x(1)) + x(2) + (Ts/L) * dq * randn;
         x = [x1;x2;x(3)];
       % WYKONANIE POMIARU z(k+1)
         z=C*x+dr*randn(2,1);
       A = [1,      Ts/Ck,         0      ;
-          -Ts*L, -Ts*xe(3)/L+1, -Ts*xe(2)/L;
+          -Ts*L, -(Ts*xe(3)/L)+1, -Ts*xe(2)/L;
             0,        0,           1     ];
-        if k == 300
+        if k == length(t)/2
             u = 0;
         end
       % - ALGORYTM FILTRU KALMANA
@@ -77,14 +80,18 @@ for k = 1:length(t)
         P1=A*P*A'+G*Q*G';
       % OBLICZENIE WZMOCNIENIA KALMANA A(k+1)
         KA=P1*C'*inv(C*P1*C'+R);
-        f = A*xe+B*u;
+        %f = A*xe+B*u;
+        f = [0;0;0];
+        f(2) = (Ts/L)*(u-xe(3)*xe(2)-xe(1)) + xe(2);
+        f(1) = xe(2)*Ts/Ck + xe(1);
+        f(3) = xe(3);
 %         f = [(1/L)*(u-xe(3)*xe(2)-xe(1));
 %              xe(2)/Ck;
 %              xe(3)];
       % OBLICZENIE PROGNOZY POMIARU z(k+1/k)
         z1=C*f;
       % OBLICZENIE ESTYMATY STANU x(k+1/k+1)
-        xe=A*xe+B*u+KA*(z-z1);
+        xe=f+KA*(z-z1);
       % OBLICZENIE MACIERZY WARIANCJI ESTYMATY P(k+1/k+1)
         P=(I-KA*C)*P1*(I-KA*C)' + KA*R*KA';
       

@@ -10,7 +10,7 @@ b = {b0, b1, b2, b3, b4};
 
 
 %% INICJALIZACJA ALGORYTMU
-options = optimoptions('linprog','Algorithm','dual-simplex');
+options = optimoptions('linprog','Algorithm','interior-point-legacy');
 
 if length(A) ~= length(B)           % Sprawdzenie czy w zadaniu istnieje macierz A0
     obecnosc_A0 = true;          
@@ -23,7 +23,7 @@ ilosc_pod_zagadnien = length(B);
 
 for i =1:ilosc_pod_zagadnien            % Znalezienie pierwszych zagadnieñ dopuszczalnych
     
-    [X{i} f{i}]= linprog(C{obecnosc_A0 + i},[],[], B{i}, b{obecnosc_A0 + i},...
+    [X{i}, f{i}]= linprog(C{obecnosc_A0 + i},[],[], B{i}, b{obecnosc_A0 + i},...
            zeros(1,length(B{i})), [], [], options);
 end
 
@@ -75,8 +75,9 @@ end
 
 %% PIERWSZA FAZA
 kolejna_iteracja = true;        % Zainicjowanie flagi tak by do while wykonywa³o siê chociarz raz
-
+iteracja = 0;
 while kolejna_iteracja == true
+    iteracja = iteracja +1;
     Be = [cell2mat(Kn), cell2mat(Ke), cell2mat(Ku)];
 
     W = [zeros(1, length((Kn))), zeros(1, length((Ke))), 1 * ones(1, length((Ku)))];    % z³o¿enie 3 wektorów
@@ -106,10 +107,10 @@ while kolejna_iteracja == true
     w = fe2 - pi2;
 
     kolejna_iteracja = false;       % wyzerowanie flagi dopowiedzialnej za przerwanie while
-    epsilon = 10^-14;
+    epsilon = 10^-6;
     for i = 1:length(w)     % Sprawdzenie czy kolejna iteracja jest potrzebna
 
-       if w(i) <  0 - epsilon
+       if w(i) <  -epsilon
            kolejna_iteracja = true;     % Ustawienie flagi w przypadku gdy potrzeban jest kolejna iteracja
            
            X{end + 1} = xe2{i};            % przypisanie x do X odpowiadaj¹cego za nie przerwanie while
@@ -119,7 +120,7 @@ while kolejna_iteracja == true
            Ke{end + 1} = [A{obecnosc_A0 + i}  *xe2{i}; wektor_jednostkowy]; %dodanie nowej kolumny ekstremalnej do zagadnienia
            
            f{end + 1} = fe2(i);               %dodanie wartoœci do komurki
-           %break
+           %break bez breaka
        end
 
     end
@@ -133,20 +134,20 @@ Be = [cell2mat(Kn), cell2mat(Ke)];
 
 be = [b{1}; ones(ilosc_pod_zagadnien,1)];
 
-[x,fe,~,~,lambda] = linprog(W, [], [], Be, be, zeros(1,length(Be(1,:))), [], [], options);
+[x,f_zad,~,~,lambda] = linprog(Z, [], [], Be, be, zeros(1,length(Be(1,:))), [], [], options);
 
 PI = -1 * lambda.eqlin;
 
  for i = 1:ilosc_pod_zagadnien
 
-        gamma(i) = C{obecnosc_A0 + i} - PI(1:ilosc_kolumn_A0)' * A{obecnosc_A0 + i}; % dzielimy PI
+        gamma{i} = C{obecnosc_A0 + i} - PI(1:ilosc_kolumn_A0)' * A{obecnosc_A0 + i}; % dzielimy PI
 
  end
  
 %Obliczenie zadañ koñcowych
 for i = 1:ilosc_pod_zagadnien
 
-    [xe(i),fe(i)] = linprog(gamma(i), [], [], B{i}, b{i+1}, zeros(1,length(B{i}(1,:))), [], [], options);
+    [xe{i},fe(i)] = linprog(gamma{i}, [], [], B{i}, b{i+1}, zeros(1,length(B{i}(1,:))), [], [], options);
 
 end
 
@@ -155,12 +156,41 @@ end
 for i = 1:length(w)     % Sprawdzenie czy kolejna iteracja jest potrzebna
 
     if w(i) >  0 + epsilon
-        printf('Coœ siê zjeba³o')
-        break
+        sprintf('Coœ siê zjeba³o')
+%         break
     end
 
 end
 
-% Wyznaczenie wyniku
+for i = 1:ilosc_pod_zagadnien               % wyzerowanei celów
+    
+    x_rozw{i} = 0;
+end
 
-rozwianie_dla_formy_standardowej = [x(1:2)',(x(3)*X01)', (x(4)*X02)' + (x(5)*[0;4;8;0])']
+% Wyznaczenie wyniku
+for i = 1:length(Ke)        % liczymy x dla g³ównej funkcij celu
+    
+    k = 1;
+    for j = 1:ilosc_pod_zagadnien
+        
+        if Ke{i}(ilosc_kolumn_A0+j) == 1            % szukamy po³¿enia jedynki w macierzy Ke w dolnej czêœci
+            k = j;
+            break;                              
+        end
+    end
+        x_rozw{k} = x_rozw{k} + X{i} * x(ilosc_kolumn_A0 + i);
+end
+
+for i = 1:ilosc_kolumn_A0
+    
+    rozwianie_dla_formy_standardowej{i} = x(i);
+end
+
+for i = ilosc_kolumn_A0+1:ilosc_pod_zagadnien + ilosc_kolumn_A0
+    rozwianie_dla_formy_standardowej{i} = x_rozw{i - ilosc_kolumn_A0};      % przypisanie pozosta³ych elementów
+    rozwianie_dla_formy_standardowej{i} = rozwianie_dla_formy_standardowej{i}';
+end
+
+rozwiazanie = cell2mat(C) * cell2mat(rozwianie_dla_formy_standardowej)'
+
+%[cell2mat(X{1:ilosc_kolumn_A0}),(x(3)*X01)', (x(4)*X02)' + (x(5)*[0;4;8;0])']

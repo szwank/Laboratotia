@@ -6,8 +6,8 @@ rng('default'); rng(8787);          % parametry generatora liczb losowych
 % INICJALIZACJA PARAMETRÓW
 
 a=1;                                % przyspieszenie pojazdu [m/s^2]
-Ts=0.001;                             % krok symulacji [s]
-t=0:Ts:10000*Ts-Ts;                          % czas symulacji [s] 
+Ts=0.00001;                             % krok symulacji [s]
+t=0:Ts:20*Ts-Ts;                          % czas symulacji [s] 
  
 m=3;								% rz¹d modelu procesu
 dq=0.01; 								% odchylenie standardowe szumu procesu
@@ -20,14 +20,14 @@ Q=ddq*eye(1); % macierz wariancji szumu w(k) procesu (sta³a)
 R=ddr*eye(2);           			% macierz wariancji szumu v(k) pomiaru (sta³a)
 P=ddq*eye(m);                			    % inicjalizacja macierzy wariancji estymaty procesu (zmienna)
 
-L = 100;
-Ck = 1;
+L = 2.5;
+Ck = 0.1*10^-3;
 x = [0;
      0;
-     25];
+     5000];
 xe = [0;
      0;
-     20];
+     4500];
 Uwe = 1;
 
 
@@ -72,7 +72,7 @@ for k = 1:length(t)
       A = [1,      Ts/Ck,         0      ;
           -Ts*L, -(Ts*xe(3)/L)+1, -Ts*xe(2)/L;
             0,        0,           1     ];
-        if k == length(t)/2
+        if k == 10
             u = 0;
         end
       % - ALGORYTM FILTRU KALMANA
@@ -82,8 +82,8 @@ for k = 1:length(t)
         KA=P1*C'*inv(C*P1*C'+R);
         %f = A*xe+B*u;
         f = [0;0;0];
-        f(2) = (Ts/L)*(u-xe(3)*xe(2)-xe(1)) + xe(2);
         f(1) = xe(2)*Ts/Ck + xe(1);
+        f(2) = (Ts/L)*(u-xe(3)*xe(2)-xe(1)) + xe(2);
         f(3) = xe(3);
 %         f = [(1/L)*(u-xe(3)*xe(2)-xe(1));
 %              xe(2)/Ck;

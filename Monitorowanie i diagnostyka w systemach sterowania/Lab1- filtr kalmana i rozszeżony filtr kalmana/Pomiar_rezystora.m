@@ -12,7 +12,7 @@ t=1:Ts:50;                          % czas symulacji [s]
 m=1;								% rz¹d modelu procesu
 dq=10; 								% odchylenie standardowe szumu procesu
 dr=10; 								% odchylenie standardowe szumu pomiaru
-ddq=10;							% wariancja szumu procesu
+ddq=100;							% wariancja szumu procesu
 ddr=100;							% wariancja szumu pomiaru
 
 
@@ -75,7 +75,7 @@ K1=KK(:,1);
 
 figure(1);
 subplot(2,1,1), plot(t,Z1,'r*', t,X1, 'b', t,X1E, 'g');
-title('Zmienna stanu x_1 - polo¿enie s');
+title('Zmienna stanu x_1 - rezystancja R');
 ylabel('Po³o¿enie s [m]');
 legend('pomiar','model', 'estymator');
 grid on;

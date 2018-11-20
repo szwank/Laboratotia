@@ -10,8 +10,8 @@ rng('default'); rng(777);rng('shuffle')          % parametry generatora liczb lo
 % INICJALIZACJA PARAMETRÓW
 
 a=1;                                % przyspieszenie pojazdu [m/s^2]
-Ts=50;                             % krok symulacji [s]
-t=0:Ts:1000;                          % czas symulacji [s] 
+Ts=0.01;                             % krok symulacji [s]
+t=0:Ts:30;                          % czas symulacji [s] 
  
 m=3;								% rz¹d modelu procesu
 dq=1; 								% odchylenie standardowe szumu procesu

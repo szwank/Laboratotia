@@ -21,7 +21,7 @@ V=ddr*eye(1);           			% macierz wariancji szumu v(k) pomiaru (sta³a)
 P=ddq*eye(m);                			    % inicjalizacja macierzy wariancji estymaty procesu (zmienna)
 
 
-a = 0.75;
+a = 0.35;
 xe = [0;0.5];
 x = [0; a];
 A = [a x(1);
@@ -50,11 +50,11 @@ for k = 1:length(t)
         z=x(1)+dr*randn(1,1);
       A = [xe(2) xe(1); 0 1];
       
-%       if k == 150
-%           a = 0.9;
+      if k == 150
+          a = 0.9;
 %       elseif k == 300
 %           a = 0.35;
-%       end
+      end
               
       % - ALGORYTM FILTRU KALMANA
       % OBLICZENIE MACIERZY WARIANCJI PROGNOZY P(k+1/k)
@@ -90,7 +90,7 @@ K1=KK(:,1); K2=KK(:,2);
 figure(1);
 subplot(3,1,1), plot(t,Z1,'r*', t,X1, 'b', t,X1E, 'g');
 title('Zmienna stanu x');
-ylabel('Po³o¿enie s [m]');
+ylabel('Wartoœæ x');
 legend('pomiar','model', 'estymator');
 grid on;
 
@@ -109,6 +109,6 @@ grid on;
 
 figure(2);
 subplot(1,1,1), plot(t,X1-Z1, 'b', t,X1-X1E, 'g');
-ylabel('B³¹d po³o¿enia [m]');
-title('B³¹d po³o¿enia z pomiaru i estymatora');
+ylabel('B³¹d parametru');
+title('B³¹d parametru a z pomiaru i estymatora');
 grid on;

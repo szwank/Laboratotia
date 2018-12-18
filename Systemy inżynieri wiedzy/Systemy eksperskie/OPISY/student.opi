@@ -1,0 +1,8 @@
+'student' jest baz¹ wiedzy elementarn¹ dok³adn¹, wspomagaj¹c¹ podejmowanie decyzji 
+o wpisie studenta na nastêpny semestr i o przyznaniu mu stypendium 
+zgodnie z zasadami:
+1)Student otrzymuje wpis, gdy z przedmiotów A,B,C ma ocenê >=3 i 
+		zap³aci³ czesne.
+2)Student otrzymuje stypendium, gdy œrednia ocena z przedmiotów 
+		A, B i C >= 4.1 i student wykazuje aktywnoœæ w kole naukowym.
+3)Student otrzymuje stypendium, gdy ma wyniki sportowe na poziomie olimpijskim

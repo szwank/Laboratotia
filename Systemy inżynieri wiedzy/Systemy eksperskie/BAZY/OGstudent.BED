@@ -1,0 +1,3 @@
+ograniczenie(1,["zap³aci³ czesne","nie zap³aci³ czesnego"] )
+ograniczenie(2,["wykazuje aktywnoœæ w kole naukowym","nie wykazuje aktywnoœci w kole naukowym"])
+ograniczenie(3,["ma wyniki sportowe na poziomie olimpijskim","nie ma wyników sportowych na poziomie olimpijskim"])

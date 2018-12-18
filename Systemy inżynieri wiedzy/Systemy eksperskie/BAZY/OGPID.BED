@@ -1,0 +1,4 @@
+ograniczenie(1,["du¿y b³¹d statyczny","ma³y b³¹d statyczny"])
+ograniczenie(2,["œredni uchyb","ma³y uchyb","brak uchybu"])
+ograniczenie(3,["ma³e przeregulowanie","du¿e przeregulowanie","brak przeregulowania"])
+ograniczenie(4,["pojawi³y siê oscylacje","brak oscylacij"])

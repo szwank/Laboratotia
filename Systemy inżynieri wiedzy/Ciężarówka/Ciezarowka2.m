@@ -35,8 +35,7 @@ gui_State = struct('gui_Name',       mfilename, ...
 if nargin && ischar(varargin{1})
     gui_State.gui_Callback = str2func(varargin{1});
 end
-% net = feedforwardnet([7,7,7],trainFcn);
-% net = configure(net, {1;1;1}, 1);
+
 if nargout
     [varargout{1:nargout}] = gui_mainfcn(gui_State, varargin{:});
 else
@@ -111,7 +110,7 @@ while start_button_value == start_button_on;
         
     else
         
-        if (get(handles.classic_box,'Value')==0)                           %//sterowanie klasyczne
+        if (get(handles.classic_box,'Value')==1)                           %//sterowanie klasyczne
             
             % do uzupelnieniea
            
@@ -147,24 +146,14 @@ while start_button_value == start_button_on;
             if theta_deg < -45 
                 theta_deg = -45;
             end
-            
-            if (fi_rad < 1.6057 && fi_rad > 1.5359) && (xc < 50 && xc > 40) && yc < 40
-                start_button_on = false;
-            end
         end
         if (get(handles.fuzzy_box,'Value')==1)                             %//rozmyte
-%             theta_deg = net(xc,yc,fi_rad);
+            
             % do uzupelnienia/wymyslenia
             
-            loadfis=readfis('fuzzylogic');
-            theta_deg=evalfis([xc;yc;fi_rad],loadfis);
-             if theta_deg > 45 
-                theta_deg = 45;
-            end
+            %loadfis=readfis('xxxxxxxxxxxx');
+            %theta_deg=evalfis([xc;yc;fi_deg],loadfis);
             
-            if theta_deg < -45 
-                theta_deg = -45;
-            end
         end
         
     end
